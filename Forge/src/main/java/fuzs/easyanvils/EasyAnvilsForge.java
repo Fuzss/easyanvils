@@ -1,6 +1,5 @@
 package fuzs.easyanvils;
 
-import fuzs.easyanvils.data.ModItemTagsProvider;
 import fuzs.easyanvils.data.ModLanguageProvider;
 import fuzs.easyanvils.handler.ItemInteractionHandler;
 import fuzs.puzzleslib.core.CoreServices;
@@ -32,6 +31,7 @@ public class EasyAnvilsForge {
         });
         MinecraftForge.EVENT_BUS.addListener((final PlayerInteractEvent.RightClickBlock evt) -> {
             ItemInteractionHandler.onRightClickBlock(evt.getLevel(), evt.getEntity(), evt.getHand(), evt.getHitVec()).ifPresent(result -> {
+                evt.setCancellationResult(result);
                 evt.setCanceled(true);
             });
         });
@@ -42,6 +42,5 @@ public class EasyAnvilsForge {
         DataGenerator generator = evt.getGenerator();
         final ExistingFileHelper existingFileHelper = evt.getExistingFileHelper();
         generator.addProvider(true, new ModLanguageProvider(generator, EasyAnvils.MOD_ID));
-        generator.addProvider(true, new ModItemTagsProvider(generator, EasyAnvils.MOD_ID, existingFileHelper));
     }
 }

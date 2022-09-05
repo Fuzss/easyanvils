@@ -20,11 +20,11 @@ public class NameTagEditScreen extends Screen {
     private static final ResourceLocation EDIT_NAME_TAG_LOCATION = new ResourceLocation(EasyAnvils.MOD_ID, "textures/gui/edit_name_tag.png");
 
     private final int imageWidth = 176;
-    private final int imageHeight = 44;
+    private final int imageHeight = 48;
     private int leftPos;
     private int topPos;
     private final int titleLabelX = 60;
-    private final int titleLabelY = 6;
+    private final int titleLabelY = 8;
     private final InteractionHand hand;
     private String itemName;
     private EditBox name;
@@ -44,7 +44,7 @@ public class NameTagEditScreen extends Screen {
             EasyAnvils.NETWORK.sendToServer(new C2SNameTagUpdateMessage(this.hand, this.itemName));
             this.onClose();
         }));
-        this.name = new EditBox(this.font, this.leftPos + 62, this.topPos + 24, 103, 12, Component.translatable("container.repair"));
+        this.name = new EditBox(this.font, this.leftPos + 62, this.topPos + 26, 103, 12, Component.translatable("container.repair"));
         this.name.setCanLoseFocus(false);
         this.name.setTextColor(-1);
         this.name.setTextColorUneditable(-1);
@@ -95,7 +95,7 @@ public class NameTagEditScreen extends Screen {
         PoseStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushPose();
         modelViewStack.scale(2.0F, 2.0F, 2.0F);
-        this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.NAME_TAG), (this.leftPos + 17) / 2, (this.topPos + 6) / 2);
+        this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.NAME_TAG), (this.leftPos + 17) / 2, (this.topPos + 8) / 2);
         modelViewStack.popPose();
         this.itemRenderer.blitOffset = 0.0F;
         RenderSystem.applyModelViewMatrix();

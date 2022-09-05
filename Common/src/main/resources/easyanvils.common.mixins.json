@@ -5,6 +5,8 @@
   "package": "fuzs.easyanvils.mixin",
   "refmap": "easyanvils.refmap.json",
   "mixins": [
+    "AnvilBlockMixin",
+    "accessor.ItemCombinerMenuAccessor"
   ],
   "client": [
   ],
