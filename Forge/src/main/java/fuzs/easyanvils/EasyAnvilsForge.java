@@ -1,7 +1,8 @@
 package fuzs.easyanvils;
 
+import fuzs.easyanvils.data.ModItemTagsProvider;
 import fuzs.easyanvils.data.ModLanguageProvider;
-import fuzs.easyanvils.handler.NameTagRenameHandler;
+import fuzs.easyanvils.handler.ItemInteractionHandler;
 import fuzs.puzzleslib.core.CoreServices;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.MinecraftForge;
@@ -24,8 +25,13 @@ public class EasyAnvilsForge {
 
     private static void registerHandlers() {
         MinecraftForge.EVENT_BUS.addListener((final PlayerInteractEvent.RightClickItem evt) -> {
-            NameTagRenameHandler.onRightClickItem(evt.getLevel(), evt.getEntity(), evt.getHand()).ifPresent(result -> {
+            ItemInteractionHandler.onRightClickItem(evt.getLevel(), evt.getEntity(), evt.getHand()).ifPresent(result -> {
                 evt.setCancellationResult(result.getResult());
+                evt.setCanceled(true);
+            });
+        });
+        MinecraftForge.EVENT_BUS.addListener((final PlayerInteractEvent.RightClickBlock evt) -> {
+            ItemInteractionHandler.onRightClickBlock(evt.getLevel(), evt.getEntity(), evt.getHand(), evt.getHitVec()).ifPresent(result -> {
                 evt.setCanceled(true);
             });
         });
@@ -36,5 +42,6 @@ public class EasyAnvilsForge {
         DataGenerator generator = evt.getGenerator();
         final ExistingFileHelper existingFileHelper = evt.getExistingFileHelper();
         generator.addProvider(true, new ModLanguageProvider(generator, EasyAnvils.MOD_ID));
+        generator.addProvider(true, new ModItemTagsProvider(generator, EasyAnvils.MOD_ID, existingFileHelper));
     }
 }
