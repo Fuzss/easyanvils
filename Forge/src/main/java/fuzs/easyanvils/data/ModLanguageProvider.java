@@ -12,6 +12,6 @@ public class ModLanguageProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         this.add("easyanvils.name_tag.edit", "Edit %s");
-        this.add("easyanvils.item.name_tag.description", "Sneak + right-click to set a new name.");
+        this.add("easyanvils.item.name_tag.description", "Sneak + right-click to set a new name without using an anvil.");
     }
 }

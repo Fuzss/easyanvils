@@ -7,6 +7,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
+import net.minecraftforge.event.entity.player.AnvilRepairEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -34,6 +35,9 @@ public class EasyAnvilsForge {
                 evt.setCancellationResult(result);
                 evt.setCanceled(true);
             });
+        });
+        MinecraftForge.EVENT_BUS.addListener((final AnvilRepairEvent evt) -> {
+            evt.setBreakChance(ItemInteractionHandler.getAnvilBreakChance(evt.getRight().isEmpty()));
         });
     }
 

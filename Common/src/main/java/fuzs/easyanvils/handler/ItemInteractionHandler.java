@@ -25,7 +25,7 @@ import java.util.Optional;
 public class ItemInteractionHandler {
 
     public static Optional<InteractionResultHolder<ItemStack>> onRightClickItem(Level level, Player player, InteractionHand hand) {
-        if (!EasyAnvils.CONFIG.get(ServerConfig.class).editNameTags) return Optional.empty();
+        if (!EasyAnvils.CONFIG.get(ServerConfig.class).editNameTagsNoAnvil) return Optional.empty();
         ItemStack stack = player.getItemInHand(hand);
         if (player.isShiftKeyDown() && stack.is(Items.NAME_TAG)) {
             if (!level.isClientSide) {
@@ -71,5 +71,10 @@ public class ItemInteractionHandler {
         } else {
             return state.is(Blocks.CHIPPED_ANVIL) ? Blocks.ANVIL.defaultBlockState().setValue(AnvilBlock.FACING, state.getValue(AnvilBlock.FACING)) : null;
         }
+    }
+
+    public static float getAnvilBreakChance(boolean renamingOnly) {
+        if (EasyAnvils.CONFIG.get(ServerConfig.class).riskFreeAnvilRenaming && renamingOnly) return 0.0F;
+        return (float) EasyAnvils.CONFIG.get(ServerConfig.class).anvilBreakChance;
     }
 }

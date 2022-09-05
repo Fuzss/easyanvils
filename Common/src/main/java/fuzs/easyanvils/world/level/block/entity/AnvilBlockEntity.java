@@ -99,7 +99,8 @@ public class AnvilBlockEntity extends BaseContainerBlockEntity implements Worldl
 
     @Override
     public boolean stillValid(Player player) {
-        if (this.level != null && this.level.getBlockEntity(this.worldPosition) != this) {
+        // anvil might break to weaker version, no reason to close the screen though, therefore instanceof check instead of reference comparison
+        if (this.level != null && !(this.level.getBlockEntity(this.worldPosition) instanceof AnvilBlockEntity)) {
             return false;
         } else {
             return !(player.distanceToSqr(this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 0.5, this.worldPosition.getZ() + 0.5) > 64.0);
