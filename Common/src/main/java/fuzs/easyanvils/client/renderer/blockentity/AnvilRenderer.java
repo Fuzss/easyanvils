@@ -33,30 +33,27 @@ public class AnvilRenderer implements BlockEntityRenderer<AnvilBlockEntity> {
 
     private void renderFlatItem(int index, ItemStack stack, Direction direction, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, int posData) {
         if (stack.isEmpty()) return;
-        boolean positiveDirection = direction.getAxisDirection().getStep() == 1;
-        boolean mirrored = (positiveDirection ? 1 : 0) != index % 2;
         poseStack.pushPose();
         poseStack.translate(0.0,1.0375, 0.0);
         poseStack.mulPose(Vector3f.XN.rotationDegrees(90.0F));
-        if (direction.getAxis() == Direction.Axis.X) {
-            if (mirrored) {
-                poseStack.translate(0.25, -0.5, 0.0);
-            } else {
-                poseStack.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
-                poseStack.translate(-0.75, 0.5, 0.0);
+        boolean mirrored = (direction.getAxisDirection().getStep() == 1 ? 1 : 0) != index % 2;
+        switch (direction.getAxis()) {
+            case X -> {
+                if (mirrored) {
+                    poseStack.translate(0.25, -0.5, 0.0);
+                } else {
+                    poseStack.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
+                    poseStack.translate(-0.75, 0.5, 0.0);
+                }
             }
-        } else if (direction.getAxis() == Direction.Axis.Z) {
-            if (mirrored) {
-                if (positiveDirection) {
+            case Z -> {
+                if (mirrored) {
                     poseStack.mulPose(Vector3f.ZN.rotationDegrees(90.0F));
                     poseStack.translate(0.25, 0.5, 0.0);
                 } else {
-                    poseStack.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
-                    poseStack.translate(-0.5, 0.25, 0.0);
+                    poseStack.mulPose(Vector3f.ZP.rotationDegrees(90.0F));
+                    poseStack.translate(-0.75, -0.5, 0.0);
                 }
-            } else {
-                poseStack.mulPose(Vector3f.ZP.rotationDegrees(90.0F));
-                poseStack.translate(-0.75, -0.5, 0.0);
             }
         }
         poseStack.scale(0.375F, 0.375F, 0.375F);

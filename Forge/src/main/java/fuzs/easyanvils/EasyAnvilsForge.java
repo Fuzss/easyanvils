@@ -2,6 +2,7 @@ package fuzs.easyanvils;
 
 import fuzs.easyanvils.data.ModLanguageProvider;
 import fuzs.easyanvils.handler.ItemInteractionHandler;
+import fuzs.easyanvils.init.ForgeModRegistry;
 import fuzs.puzzleslib.core.CoreServices;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.MinecraftForge;
@@ -19,6 +20,7 @@ public class EasyAnvilsForge {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
+        ForgeModRegistry.touch();
         CoreServices.FACTORIES.modConstructor(EasyAnvils.MOD_ID).accept(new EasyAnvils());
         registerHandlers();
     }

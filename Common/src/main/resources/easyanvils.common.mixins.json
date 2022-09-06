@@ -7,6 +7,7 @@
   "mixins": [
     "AnvilBlockMixin",
     "AnvilMenuMixin",
+    "accessor.AnvilMenuAccessor",
     "accessor.ItemCombinerMenuAccessor"
   ],
   "client": [

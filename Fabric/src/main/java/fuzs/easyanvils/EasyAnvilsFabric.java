@@ -2,6 +2,7 @@ package fuzs.easyanvils;
 
 import fuzs.easyanvils.api.event.entity.player.AnvilRepairCallback;
 import fuzs.easyanvils.handler.ItemInteractionHandler;
+import fuzs.easyanvils.init.FabricModRegistry;
 import fuzs.puzzleslib.core.CoreServices;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -18,6 +19,7 @@ public class EasyAnvilsFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        FabricModRegistry.touch();
         CoreServices.FACTORIES.modConstructor(EasyAnvils.MOD_ID).accept(new EasyAnvils());
         registerHandlers();
     }

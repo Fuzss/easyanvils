@@ -1,6 +1,9 @@
 package fuzs.easyanvils.world.inventory;
 
+import fuzs.easyanvils.core.ModServices;
+import fuzs.easyanvils.handler.AnvilRepairContext;
 import fuzs.easyanvils.init.ModRegistry;
+import fuzs.easyanvils.mixin.accessor.AnvilMenuAccessor;
 import fuzs.easyanvils.mixin.accessor.ItemCombinerMenuAccessor;
 import net.minecraft.Util;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,6 +43,14 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
     protected boolean mayPickup(Player player, boolean hasStack) {
         // change cost requirement from > 0 to >= 0 to allow for free name tag renames
         return (player.getAbilities().instabuild || player.experienceLevel >= this.getCost()) && this.getCost() >= 0;
+    }
+
+    @Override
+    public void createResult() {
+        AnvilRepairContext context = ModServices.ABSTRACTIONS.anvilRepairContextOf(this, this.player, ((AnvilMenuAccessor) this).getItemName(), this.resultSlots, i -> ((AnvilMenuAccessor) this).setRepairItemCountCost(i), i -> this.setData(0, i));
+        if (!context.createResult(this.inputSlots.getItem(0), this.inputSlots.getItem(1))) {
+            super.createResult();
+        }
     }
 
     @Override
