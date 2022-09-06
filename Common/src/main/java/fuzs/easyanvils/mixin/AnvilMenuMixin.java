@@ -33,27 +33,27 @@ abstract class AnvilMenuMixin extends ItemCombinerMenu {
         super(menuType, i, inventory, containerLevelAccess);
     }
 
-    @ModifyVariable(method = "createResult", at = @At(value = "STORE", ordinal = 0), ordinal = 8)
-    public int createResult$modifyVariable$store$1(int leftItemMaxLevel) {
-        // store this
-        this.easyanvils_leftItemMaxLevel = leftItemMaxLevel;
-        return leftItemMaxLevel;
-    }
-
-    @ModifyVariable(method = "createResult", at = @At(value = "STORE", ordinal = 0), ordinal = 9)
-    public int createResult$modifyVariable$store$2(int rightItemMaxLevel) {
-        // store this
-        this.easyanvils_rightItemMaxLevel = rightItemMaxLevel;
-        return rightItemMaxLevel;
-    }
-
-    @ModifyVariable(method = "createResult", at = @At(value = "STORE"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/Enchantment;getMaxLevel()I", ordinal = 0)), ordinal = 7)
-    public int createResult$modifyVariable$store$3(int rightItemMaxLevel) {
-        // prevent a level higher than max level from being lowered to max value
-        // feature specifically requested by a user
-        int maxLevel = Math.max(this.easyanvils_leftItemMaxLevel, this.easyanvils_rightItemMaxLevel);
-        return Math.max(maxLevel, rightItemMaxLevel);
-    }
+//    @ModifyVariable(method = "createResult", at = @At(value = "STORE", ordinal = 0), ordinal = 8)
+//    public int createResult$modifyVariable$store$1(int leftItemMaxLevel) {
+//        // store this
+//        this.easyanvils_leftItemMaxLevel = leftItemMaxLevel;
+//        return leftItemMaxLevel;
+//    }
+//
+//    @ModifyVariable(method = "createResult", at = @At(value = "STORE", ordinal = 0), ordinal = 9)
+//    public int createResult$modifyVariable$store$2(int rightItemMaxLevel) {
+//        // store this
+//        this.easyanvils_rightItemMaxLevel = rightItemMaxLevel;
+//        return rightItemMaxLevel;
+//    }
+//
+//    @ModifyVariable(method = "createResult", at = @At(value = "STORE"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/Enchantment;getMaxLevel()I", ordinal = 0)), ordinal = 7)
+//    public int createResult$modifyVariable$store$3(int rightItemMaxLevel) {
+//        // prevent a level higher than max level from being lowered to max value
+//        // feature specifically requested by a user
+//        int maxLevel = Math.max(this.easyanvils_leftItemMaxLevel, this.easyanvils_rightItemMaxLevel);
+//        return Math.max(maxLevel, rightItemMaxLevel);
+//    }
 
     @Inject(method = "createResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/DataSlot;set(I)V", ordinal = 0, shift = At.Shift.AFTER), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;setHoverName(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/world/item/ItemStack;")))
     public void createResult$inject$invoke$set(CallbackInfo callback) {

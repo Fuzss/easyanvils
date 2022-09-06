@@ -21,6 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 public class ItemInteractionHandler {
 
@@ -73,8 +74,8 @@ public class ItemInteractionHandler {
         }
     }
 
-    public static float getAnvilBreakChance(boolean renamingOnly) {
-        if (EasyAnvils.CONFIG.get(ServerConfig.class).riskFreeAnvilRenaming && renamingOnly) return 0.0F;
-        return (float) EasyAnvils.CONFIG.get(ServerConfig.class).anvilBreakChance;
+    public static OptionalDouble onAnvilRepair(Player player, ItemStack left, ItemStack right, ItemStack output, double breakChance) {
+        if (EasyAnvils.CONFIG.get(ServerConfig.class).riskFreeAnvilRenaming && right.isEmpty()) return OptionalDouble.of(0.0);
+        return OptionalDouble.of(EasyAnvils.CONFIG.get(ServerConfig.class).anvilBreakChance);
     }
 }

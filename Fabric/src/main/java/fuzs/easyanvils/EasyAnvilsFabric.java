@@ -1,5 +1,6 @@
 package fuzs.easyanvils;
 
+import fuzs.easyanvils.api.event.entity.player.AnvilRepairCallback;
 import fuzs.easyanvils.handler.ItemInteractionHandler;
 import fuzs.puzzleslib.core.CoreServices;
 import net.fabricmc.api.ModInitializer;
@@ -28,5 +29,6 @@ public class EasyAnvilsFabric implements ModInitializer {
         UseBlockCallback.EVENT.register((Player player, Level world, InteractionHand hand, BlockHitResult hitResult) -> {
             return ItemInteractionHandler.onRightClickBlock(world, player, hand, hitResult).orElse(InteractionResult.PASS);
         });
+        AnvilRepairCallback.EVENT.register(ItemInteractionHandler::onAnvilRepair);
     }
 }

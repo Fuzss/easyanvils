@@ -14,7 +14,7 @@ public class ServerConfig implements ConfigCore {
     public boolean freeNameTagRenames = true;
     @Config(description = "Edit name tags without cost nor anvil, simply by sneak + right-clicking.")
     public boolean editNameTagsNoAnvil = true;
-    @Config(description = "Chance the anvil will break into chipped or damaged variant, or break completely, after using. Value is set to 0.12 in vanilla.")
+    @Config(description = "Chance the anvil will break into chipped or damaged variant, or break completely after using. Value is set to 0.12 in vanilla.")
     @Config.DoubleRange(min = 0.0, max = 1.0)
     public double anvilBreakChance = 0.05;
     @Config(description = "Solely renaming items in an anvil will never cause the anvil to break.")

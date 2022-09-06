@@ -37,7 +37,8 @@ public class EasyAnvilsForge {
             });
         });
         MinecraftForge.EVENT_BUS.addListener((final AnvilRepairEvent evt) -> {
-            evt.setBreakChance(ItemInteractionHandler.getAnvilBreakChance(evt.getRight().isEmpty()));
+            ItemInteractionHandler.onAnvilRepair(evt.getEntity(), evt.getLeft(), evt.getRight(), evt.getOutput(), evt.getBreakChance())
+                    .ifPresent(breakChance -> evt.setBreakChance((float) breakChance));
         });
     }
 

@@ -49,6 +49,7 @@ public class EasyAnvils implements ModConstructor {
 
             @Override
             public ItemStack execute(BlockSource source, ItemStack stack) {
+                if (!EasyAnvils.CONFIG.get(ServerConfig.class).anvilRepairing) return super.execute(source, stack);
                 Direction direction = source.getBlockState().getValue(DispenserBlock.FACING);
                 BlockPos pos = source.getPos().relative(direction);
                 Level level = source.getLevel();
