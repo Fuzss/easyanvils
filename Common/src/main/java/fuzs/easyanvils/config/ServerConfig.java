@@ -21,4 +21,6 @@ public class ServerConfig implements ConfigCore {
     public boolean riskFreeAnvilRenaming = true;
     @Config(description = "When combining enchanted items in an anvil, prevent an enchantment level higher than the max level value for that enchantment from being lowered to said max value.")
     public boolean noAnvilMaxLevelLimit = true;
+    @Config(description = {"The naming field in anvils and the name tag gui will support formatting codes for setting custom text colors and styles.", "Check out the Minecraft Wiki for all available formatting codes and their usage: https://minecraft.fandom.com/wiki/Formatting_codes#Usage"})
+    public boolean renamingSupportsFormatting = true;
 }

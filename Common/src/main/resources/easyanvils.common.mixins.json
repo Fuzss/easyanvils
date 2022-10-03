@@ -11,6 +11,7 @@
     "accessor.ItemCombinerMenuAccessor"
   ],
   "client": [
+    "client.accessor.AnvilScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

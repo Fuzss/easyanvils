@@ -1,7 +1,7 @@
 package fuzs.easyanvils.network.client;
 
+import fuzs.easyanvils.util.FormattedStringHelper;
 import fuzs.puzzleslib.network.Message;
-import net.minecraft.SharedConstants;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -47,7 +47,7 @@ public class C2SNameTagUpdateMessage implements Message<C2SNameTagUpdateMessage>
                     if (StringUtils.isBlank(message.title)) {
                         stack.resetHoverName();
                     } else {
-                        String s = SharedConstants.filterText(message.title);
+                        String s = FormattedStringHelper.filterText(message.title);
                         if (s.length() <= 50) {
                             stack.setHoverName(Component.literal(s));
                         }

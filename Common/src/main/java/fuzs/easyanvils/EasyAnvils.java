@@ -7,6 +7,7 @@ import fuzs.easyanvils.init.ModRegistry;
 import fuzs.easyanvils.network.S2CAnvilRepairMessage;
 import fuzs.easyanvils.network.S2COpenNameTagEditorMessage;
 import fuzs.easyanvils.network.client.C2SNameTagUpdateMessage;
+import fuzs.easyanvils.network.client.C2SRenameItemMessage;
 import fuzs.puzzleslib.config.ConfigHolder;
 import fuzs.puzzleslib.core.CoreServices;
 import fuzs.puzzleslib.core.ModConstructor;
@@ -73,5 +74,6 @@ public class EasyAnvils implements ModConstructor {
         NETWORK.register(S2COpenNameTagEditorMessage.class, S2COpenNameTagEditorMessage::new, MessageDirection.TO_CLIENT);
         NETWORK.register(C2SNameTagUpdateMessage.class, C2SNameTagUpdateMessage::new, MessageDirection.TO_SERVER);
         NETWORK.register(S2CAnvilRepairMessage.class, S2CAnvilRepairMessage::new, MessageDirection.TO_CLIENT);
+        NETWORK.register(C2SRenameItemMessage.class, C2SRenameItemMessage::new, MessageDirection.TO_SERVER);
     }
 }

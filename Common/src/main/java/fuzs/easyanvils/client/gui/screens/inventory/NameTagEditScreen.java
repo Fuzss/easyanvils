@@ -3,6 +3,8 @@ package fuzs.easyanvils.client.gui.screens.inventory;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.easyanvils.EasyAnvils;
+import fuzs.easyanvils.client.gui.components.OpenEditBox;
+import fuzs.easyanvils.config.ServerConfig;
 import fuzs.easyanvils.network.client.C2SNameTagUpdateMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -44,7 +46,11 @@ public class NameTagEditScreen extends Screen {
             EasyAnvils.NETWORK.sendToServer(new C2SNameTagUpdateMessage(this.hand, this.itemName));
             this.onClose();
         }));
-        this.name = new EditBox(this.font, this.leftPos + 62, this.topPos + 26, 103, 12, Component.translatable("container.repair"));
+        if (EasyAnvils.CONFIG.get(ServerConfig.class).renamingSupportsFormatting) {
+            this.name = new OpenEditBox(this.font, this.leftPos + 62, this.topPos + 26, 103, 12, Component.translatable("container.repair"));
+        } else {
+            this.name = new EditBox(this.font, this.leftPos + 62, this.topPos + 26, 103, 12, Component.translatable("container.repair"));
+        }
         this.name.setCanLoseFocus(false);
         this.name.setTextColor(-1);
         this.name.setTextColorUneditable(-1);
