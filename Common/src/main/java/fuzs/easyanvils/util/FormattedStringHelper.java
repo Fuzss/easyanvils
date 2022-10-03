@@ -1,5 +1,6 @@
 package fuzs.easyanvils.util;
 
+import com.google.common.collect.Lists;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
@@ -11,23 +12,23 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * custom string decomposer for iterating formatted strings without removing formatting codes, intended for text fields
  */
 public class FormattedStringHelper {
 
-    public static int stringWidth(Font font, @Nullable String content) {
-        if (content == null) {
-            return 0;
-        } else {
-            MutableFloat mutableFloat = new MutableFloat();
-            FormattedStringHelper.iterateFormatted(content, Style.EMPTY, (index, style, j) -> {
+    public static int stringWidth(Font font, @Nullable String content, int skip) {
+        if (content == null) return 0;
+        MutableFloat mutableFloat = new MutableFloat();
+        FormattedStringHelper.iterateFormatted(content, Style.EMPTY, (index, style, j) -> {
+            if (index >= skip) {
                 mutableFloat.add(font.getSplitter().stringWidth(FormattedCharSequence.forward(Character.toString(j), style)));
-                return true;
-            });
-            return Mth.ceil(mutableFloat.floatValue());
-        }
+            }
+            return true;
+        });
+        return Mth.ceil(mutableFloat.floatValue());
     }
 
     public static boolean isAllowedChatCharacter(char character) {
@@ -51,14 +52,14 @@ public class FormattedStringHelper {
         return stringBuilder.toString();
     }
 
-    public static int plainIndexAtWidth(Font font, String content, int maxWidth, Style style) {
-        WidthLimitedCharSink widthLimitedCharSink = new WidthLimitedCharSink(font.getSplitter(), (float) maxWidth);
+    public static int plainIndexAtWidth(Font font, String content, int skip, int maxWidth, Style style) {
+        WidthLimitedCharSink widthLimitedCharSink = new WidthLimitedCharSink(font.getSplitter(), (float) maxWidth, skip);
         iterateFormatted(content, style, widthLimitedCharSink);
         return widthLimitedCharSink.getPosition();
     }
 
-    public static String plainHeadByWidth(Font font, String content, int maxWidth, Style style) {
-        return content.substring(0, plainIndexAtWidth(font, content, maxWidth, style));
+    public static String plainHeadByWidth(Font font, String content, int skip, int maxWidth, Style style) {
+        return content.substring(skip, plainIndexAtWidth(font, content, skip, maxWidth, style));
     }
 
     public static String plainTailByWidth(Font font, String content, int maxWidth, Style style) {
@@ -94,7 +95,8 @@ public class FormattedStringHelper {
                     if (feedChar(text, defaultStyle, sink, position, character, textLength) == -1) {
                         return false;
                     }
-                    if (feedChar(text, defaultStyle, sink, ++position, text.charAt(position), textLength) == -1) {
+                    position += 1;
+                    if (feedChar(text, defaultStyle, sink, position, text.charAt(position), textLength) == -1) {
                         return false;
                     }
                 } else {
@@ -113,60 +115,35 @@ public class FormattedStringHelper {
     }
 
     public static boolean iterateFormattedBackwards(String text, Style defaultStyle, FormattedCharSink sink) {
-        int textLength = text.length();
-        Style currentStyle = defaultStyle;
-
-        for (int position = textLength - 1; position >= 0; --position) {
-            char character = text.charAt(position);
-            if (character == '§') {
-                if (position - 1 >= 0) {
-                    char d = text.charAt(position - 1);
-                    ChatFormatting chatFormatting = ChatFormatting.getByCode(d);
-                    if (chatFormatting != null) {
-                        currentStyle = chatFormatting == ChatFormatting.RESET ? defaultStyle : currentStyle.applyLegacyFormat(chatFormatting);
-                    }
-
-                    if (feedChar(text, defaultStyle, sink, position, character, textLength, false) == -1) {
-                        return false;
-                    }
-                    if (feedChar(text, defaultStyle, sink, --position, text.charAt(position), textLength, false) == -1) {
-                        return false;
-                    }
-                } else {
-                    return feedChar(text, defaultStyle, sink, position, character, textLength, false) != -1;
-                }
-
-            } else {
-                position = feedChar(text, currentStyle, sink, position, character, textLength, false);
-                if (position == -1) {
-                    return false;
-                }
+        List<FormattedCharSequence> list = Lists.newArrayList();
+        iterateFormatted(text, defaultStyle, (index, style, j) -> {
+            list.add(FormattedCharSequence.forward(Character.toString(j), style));
+            return true;
+        });
+        for (int i = list.size() - 1; i >= 0; i--) {
+            if (!list.get(i).accept(sink)) {
+                return false;
             }
         }
-
         return true;
     }
 
     private static int feedChar(String text, Style style, FormattedCharSink sink, int position, char character, int textLength) {
-        return feedChar(text, style, sink, position, character, textLength, true);
-    }
-
-    private static int feedChar(String text, Style style, FormattedCharSink sink, int position, char character, int textLength, boolean forwardIteration) {
         if (Character.isHighSurrogate(character)) {
-            if (forwardIteration && position + 1 >= textLength || !forwardIteration && position - 1 < 0) {
+            if (position + 1 >= textLength) {
                 if (!sink.accept(position, style, 65533)) {
                     return -1;
                 }
-                return forwardIteration ? textLength : -2;
+                return textLength;
             }
 
-            char d = text.charAt(position + (forwardIteration ? 1 : -1));
+            char d = text.charAt(position + (1));
             if (Character.isLowSurrogate(d)) {
                 if (!sink.accept(position, style, Character.toCodePoint(character, d))) {
                     return -1;
                 }
 
-                position += forwardIteration ? 1 : -1;
+                position += 1;
             } else if (!sink.accept(position, style, 65533)) {
                 return -1;
             }
@@ -183,16 +160,20 @@ public class FormattedStringHelper {
     private static class WidthLimitedCharSink implements FormattedCharSink {
         private final StringSplitter splitter;
         private float maxWidth;
+        private final int skip;
         private int position;
 
-        public WidthLimitedCharSink(StringSplitter splitter, float f) {
+        public WidthLimitedCharSink(StringSplitter splitter, float f, int skip) {
             this.splitter = splitter;
             this.maxWidth = f;
+            this.skip = skip;
         }
 
         @Override
         public boolean accept(int i, Style style, int j) {
-            this.maxWidth -= this.splitter.stringWidth(FormattedCharSequence.forward(Character.toString(j), style));
+            if (i >= this.skip) {
+                this.maxWidth -= this.splitter.stringWidth(FormattedCharSequence.forward(Character.toString(j), style));
+            }
             if (this.maxWidth >= 0.0F) {
                 this.position = i + Character.charCount(j);
                 return true;

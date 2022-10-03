@@ -456,8 +456,8 @@ public class OpenEditBox extends EditBox {
                     i -= 4;
                 }
 
-                String string = FormattedStringHelper.plainHeadByWidth(this.font, this.value.substring(this.displayPos), this.getInnerWidth(), Style.EMPTY);
-                this.moveCursorTo(FormattedStringHelper.plainHeadByWidth(this.font, string, i, Style.EMPTY).length() + this.displayPos);
+                String string = FormattedStringHelper.plainHeadByWidth(this.font, this.value, this.displayPos, this.getInnerWidth(), Style.EMPTY);
+                this.moveCursorTo(FormattedStringHelper.plainHeadByWidth(this.font, string, 0, i, Style.EMPTY).length() + this.displayPos);
                 return true;
             } else {
                 return false;
@@ -485,7 +485,7 @@ public class OpenEditBox extends EditBox {
             int i = this.isEditable ? this.textColor : this.textColorUneditable;
             int j = this.cursorPos - this.displayPos;
             int k = this.highlightPos - this.displayPos;
-            String string = FormattedStringHelper.plainHeadByWidth(this.font, this.value.substring(this.displayPos), this.getInnerWidth(), Style.EMPTY);
+            String string = FormattedStringHelper.plainHeadByWidth(this.font, this.value, this.displayPos, this.getInnerWidth(), Style.EMPTY);
             boolean bl = j >= 0 && j <= string.length();
             boolean bl2 = this.isFocused() && this.frame / 6 % 2 == 0 && bl;
             int l = this.bordered ? this.x + 4 : this.x;
@@ -526,7 +526,7 @@ public class OpenEditBox extends EditBox {
             }
 
             if (k != j) {
-                int p = l + FormattedStringHelper.stringWidth(this.font, string.substring(0, k));
+                int p = l + FormattedStringHelper.stringWidth(this.font, this.value.substring(0, this.highlightPos), this.displayPos);
                 this.renderHighlight(o, m - 1, p - 1, m + 1 + 9);
             }
 
@@ -685,7 +685,7 @@ public class OpenEditBox extends EditBox {
             }
 
             int j = this.getInnerWidth();
-            String string = FormattedStringHelper.plainHeadByWidth(this.font, this.value.substring(this.displayPos), j, Style.EMPTY);
+            String string = FormattedStringHelper.plainHeadByWidth(this.font, this.value, this.displayPos, j, Style.EMPTY);
             int k = string.length() + this.displayPos;
             if (this.highlightPos == this.displayPos) {
                 this.displayPos -= FormattedStringHelper.plainTailByWidth(this.font, this.value, j, Style.EMPTY).length();
@@ -733,7 +733,7 @@ public class OpenEditBox extends EditBox {
 
     @Override
     public int getScreenX(int charNum) {
-        return charNum > this.value.length() ? this.x : this.x + FormattedStringHelper.stringWidth(this.font, this.value.substring(0, charNum));
+        return charNum > this.value.length() ? this.x : this.x + FormattedStringHelper.stringWidth(this.font, this.value.substring(0, charNum), 0);
     }
 
     @Override

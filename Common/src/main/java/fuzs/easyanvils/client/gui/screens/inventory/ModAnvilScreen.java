@@ -7,6 +7,7 @@ import fuzs.easyanvils.client.gui.components.OpenEditBox;
 import fuzs.easyanvils.config.ServerConfig;
 import fuzs.easyanvils.mixin.client.accessor.AnvilScreenAccessor;
 import fuzs.easyanvils.network.client.C2SRenameItemMessage;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 import net.minecraft.network.chat.Component;
@@ -60,6 +61,13 @@ public class ModAnvilScreen extends AnvilScreen {
             this.menu.setItemName(string);
             EasyAnvils.NETWORK.sendToServer(new C2SRenameItemMessage(string));
         }
+    }
+
+    @Override
+    public void resize(Minecraft minecraft, int width, int height) {
+        boolean visible = this.name.isVisible();
+        super.resize(minecraft, width, height);
+        this.name.setVisible(visible);
     }
 
     @Override
