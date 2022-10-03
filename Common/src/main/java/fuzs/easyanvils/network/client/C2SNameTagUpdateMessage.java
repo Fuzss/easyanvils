@@ -48,7 +48,7 @@ public class C2SNameTagUpdateMessage implements Message<C2SNameTagUpdateMessage>
                         stack.resetHoverName();
                     } else {
                         String s = FormattedStringHelper.filterText(message.title);
-                        if (s.length() <= 50) {
+                        if (FormattedStringHelper.countFormattedChars(s) <= 50) {
                             stack.setHoverName(Component.literal(s));
                         }
                     }

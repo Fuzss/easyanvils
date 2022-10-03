@@ -78,6 +78,39 @@ public class FormattedStringHelper {
         return content.substring(mutableInt.intValue());
     }
 
+    public static int countFormattedChars(String text) {
+        int count = 0;
+        for (int position = 0; position < text.length(); position++) {
+            char character = text.charAt(position);
+            if (character == '§') {
+                position++;
+            } else {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static String formattedSubString(String text, int start, int end) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0, j = 0; i < text.length(); i++) {
+            char character = text.charAt(i);
+            if (character == '§') {
+                i++;
+            } else {
+                if (j >= start) {
+                    if (j < end) {
+                        builder.append(text.charAt(i));
+                    } else {
+                        break;
+                    }
+                }
+                j++;
+            }
+        }
+        return builder.toString();
+    }
+
     public static boolean iterateFormatted(String text, Style defaultStyle, FormattedCharSink sink) {
         int textLength = text.length();
         Style currentStyle = defaultStyle;

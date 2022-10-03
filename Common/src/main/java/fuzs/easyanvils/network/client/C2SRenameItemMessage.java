@@ -40,7 +40,7 @@ public class C2SRenameItemMessage implements Message<C2SRenameItemMessage> {
                         return;
                     }
                     String s = FormattedStringHelper.filterText(message.name);
-                    if (s.length() <= 50) {
+                    if (FormattedStringHelper.countFormattedChars(s) <= 50) {
                         anvilmenu.setItemName(s);
                     }
                 }

@@ -136,8 +136,8 @@ public class OpenEditBox extends EditBox {
     @Override
     public void setValue(String text) {
         if (this.filter.test(text)) {
-            if (text.length() > this.maxLength) {
-                this.value = text.substring(0, this.maxLength);
+            if (FormattedStringHelper.countFormattedChars(text) > this.maxLength) {
+                this.value = FormattedStringHelper.formattedSubString(text, 0, this.maxLength);
             } else {
                 this.value = text;
             }
@@ -178,12 +178,14 @@ public class OpenEditBox extends EditBox {
     public void insertText(String textToWrite) {
         int i = Math.min(this.cursorPos, this.highlightPos);
         int j = Math.max(this.cursorPos, this.highlightPos);
-        int k = this.maxLength - this.value.length() - (i - j);
+        int k = this.maxLength - FormattedStringHelper.countFormattedChars(this.value) - (i - j);
         String string = FormattedStringHelper.filterText(textToWrite);
-        int l = string.length();
+        int l = FormattedStringHelper.countFormattedChars(string);
         if (k < l) {
-            string = string.substring(0, k);
-            l = k;
+            string = FormattedStringHelper.formattedSubString(string, 0, k);
+            l = this.maxLength - this.value.length() - (i - j);
+        } else {
+            l = string.length();
         }
 
         String string2 = new StringBuilder(this.value).replace(i, j, string).toString();
@@ -500,7 +502,7 @@ public class OpenEditBox extends EditBox {
                 n = this.font.drawShadow(poseStack, this.formatter.apply(string2, this.displayPos), (float) l, (float) m, i);
             }
 
-            boolean bl3 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
+            boolean bl3 = this.cursorPos < this.value.length() || FormattedStringHelper.countFormattedChars(this.value) >= this.getMaxLength();
             int o = n;
             if (!bl) {
                 o = j > 0 ? l + this.width : l;
@@ -581,8 +583,8 @@ public class OpenEditBox extends EditBox {
     @Override
     public void setMaxLength(int length) {
         this.maxLength = length;
-        if (this.value.length() > length) {
-            this.value = this.value.substring(0, length);
+        if (FormattedStringHelper.countFormattedChars(this.value) > length) {
+            this.value = FormattedStringHelper.formattedSubString(this.value, 0, length);
             this.onValueChange(this.value);
         }
 
