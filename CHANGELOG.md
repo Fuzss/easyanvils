@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.2-1.19.2] - 2022-10-13
+### Changed
+- Renaming any item is now free and will not increase the prior work penalty, there is a config setting to change this back to only apply for name tags
+
 ## [v4.0.1-1.19.2] - 2022-10-03
 ### Added
 - Added ability to use formatting codes in anvils and the new name tag interface; allows for stylizing item and entity names

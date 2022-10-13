@@ -2,6 +2,10 @@ package fuzs.easyanvils.config;
 
 import fuzs.puzzleslib.config.ConfigCore;
 import fuzs.puzzleslib.config.annotation.Config;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+
+import java.util.function.Predicate;
 
 public class ServerConfig implements ConfigCore {
     @Config(description = "Repairing items in an anvil multiple times will not make subsequent repairs more and more expensive.")
@@ -10,8 +14,8 @@ public class ServerConfig implements ConfigCore {
     public int maxAnvilRepairCost = 40;
     @Config(description = "Allow using iron blocks to repair an anvil by one stage. Can be automated using dispensers.")
     public boolean anvilRepairing = true;
-    @Config(description = "Renaming name tags in an anvil no longer costs any enchantment levels at all.")
-    public boolean freeNameTagRenames = true;
+    @Config(description = "Renaming any item in an anvil no longer costs any enchantment levels at all. Can be restricted to only name tags.")
+    public FreeRenames freeRenames = FreeRenames.ALL;
     @Config(description = "Edit name tags without cost nor anvil, simply by sneak + right-clicking.")
     public boolean editNameTagsNoAnvil = true;
     @Config(description = "Chance the anvil will break into chipped or damaged variant, or break completely after using. Value is set to 0.12 in vanilla.")
@@ -23,4 +27,14 @@ public class ServerConfig implements ConfigCore {
     public boolean noAnvilMaxLevelLimit = true;
     @Config(description = {"The naming field in anvils and the name tag gui will support formatting codes for setting custom text colors and styles.", "Check out the Minecraft Wiki for all available formatting codes and their usage: https://minecraft.fandom.com/wiki/Formatting_codes#Usage"})
     public boolean renamingSupportsFormatting = true;
+
+    public enum FreeRenames {
+        ALL(stack -> true), NAME_TAGS(stack -> stack.is(Items.NAME_TAG)), NONE(stack -> false);
+
+        public final Predicate<ItemStack> filter;
+
+        FreeRenames(Predicate<ItemStack> filter) {
+            this.filter = filter;
+        }
+    }
 }

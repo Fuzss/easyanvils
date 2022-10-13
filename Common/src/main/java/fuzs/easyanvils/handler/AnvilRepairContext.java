@@ -66,7 +66,7 @@ public class AnvilRepairContext {
         cost.setValue(1);
         int i = 0;
         int j = 0;
-        int k = 0;
+        int renamingCost = 0;
         if (leftInput.isEmpty()) {
             this.enqueueAction(() -> this.resultSlots.setItem(0, ItemStack.EMPTY));
             cost.setValue(0);
@@ -198,15 +198,20 @@ public class AnvilRepairContext {
                 }
             }
 
+            boolean hasRenamedItem = false;
             if (StringUtils.isBlank(this.itemName)) {
                 if (leftInput.hasCustomHoverName()) {
-                    k = 1;
-                    i += k;
+                    hasRenamedItem = true;
+                    renamingCost = EasyAnvils.CONFIG.get(ServerConfig.class).freeRenames.filter.test(leftInput) ? 0 : 1;
+                    if (renamingCost != 1) this.applyLater();
+                    i += renamingCost;
                     itemstack1.resetHoverName();
                 }
             } else if (!this.itemName.equals(leftInput.getHoverName().getString())) {
-                k = 1;
-                i += k;
+                hasRenamedItem = true;
+                renamingCost = EasyAnvils.CONFIG.get(ServerConfig.class).freeRenames.filter.test(leftInput) ? 0 : 1;
+                if (renamingCost != 1) this.applyLater();
+                i += renamingCost;
                 itemstack1.setHoverName(Component.literal(this.itemName));
             }
             itemstack1 = this.testBookEnchantable(rightInput, itemstack1, flag);
@@ -219,19 +224,12 @@ public class AnvilRepairContext {
                 cost.setValue(j + i);
             }
 
-            // make name tag renames free
-            if (EasyAnvils.CONFIG.get(ServerConfig.class).freeNameTagRenames) {
-                if (leftInput.is(Items.NAME_TAG) && rightInput.isEmpty() && cost.getValue() > 0) {
-                    cost.setValue(0);
-                    this.applyLater();
-                }
-            }
-
-            if (i <= 0) {
+            // when renaming is free make sure to let the item stack pass without being cleared
+            if (i <= 0 && !hasRenamedItem) {
                 itemstack1 = ItemStack.EMPTY;
             }
 
-            if (k == i && k > 0 && cost.getValue() >= 40) {
+            if (renamingCost == i && hasRenamedItem && cost.getValue() >= 40) {
                 cost.setValue(39);
             }
 
@@ -255,11 +253,16 @@ public class AnvilRepairContext {
                     k2 = rightInput.getBaseRepairCost();
                 }
 
-                if (k != i || k == 0) {
+                if (renamingCost != i || !hasRenamedItem) {
                     k2 = AnvilMenu.calculateIncreasedRepairCost(k2);
                 }
 
-                itemstack1.setRepairCost(k2);
+                // don't add tag when there is no repair cost
+                if (k2 > 0) {
+                    itemstack1.setRepairCost(k2);
+                } else {
+                    this.applyLater();
+                }
                 EnchantmentHelper.setEnchantments(map, itemstack1);
             }
 

@@ -17,7 +17,7 @@ public class NameTagTooltipHandler {
         if (stack.is(Items.NAME_TAG)) {
             Component component = Component.translatable("easyanvils.item.name_tag.description").withStyle(ChatFormatting.GRAY);
             if (context.isAdvanced()) {
-                lines.add(lines.size() - 1, component);
+                lines.add(lines.size() - (stack.hasTag() ? 2 : 1), component);
             } else {
                 lines.add(component);
             }
