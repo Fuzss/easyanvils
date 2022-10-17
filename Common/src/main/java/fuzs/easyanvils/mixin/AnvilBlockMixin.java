@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AnvilBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -33,7 +35,8 @@ abstract class AnvilBlockMixin extends FallingBlock implements EntityBlock {
     }
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
-    public void use$inject$head(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> callbackInfo) {
+    public void easyanvils$use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> callbackInfo) {
+        if (!this.easyanvils$validAnvil()) return;
         if (!worldIn.isClientSide) {
             if (worldIn.getBlockEntity(pos) instanceof AnvilBlockEntity blockEntity) {
                 player.openMenu(blockEntity);
@@ -48,19 +51,21 @@ abstract class AnvilBlockMixin extends FallingBlock implements EntityBlock {
     }
 
     @Inject(method = "getMenuProvider", at = @At("HEAD"), cancellable = true)
-    public void getMenuProvider$inject$head(BlockState state, Level level, BlockPos pos, CallbackInfoReturnable<MenuProvider> callback) {
+    public void easyanvils$getMenuProvider(BlockState state, Level level, BlockPos pos, CallbackInfoReturnable<MenuProvider> callback) {
+        if (!this.easyanvils$validAnvil()) return;
         callback.setReturnValue(level.getBlockEntity(pos) instanceof MenuProvider blockEntity ? blockEntity : null);
     }
 
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        if (!this.easyanvils$validAnvil()) return null;
         return ModRegistry.ANVIL_BLOCK_ENTITY_TYPE.get().create(pos, state);
     }
 
     @Override
     public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!state.is(newState.getBlock())) {
+        if (this.easyanvils$validAnvil() && !state.is(newState.getBlock())) {
             if (worldIn.getBlockEntity(pos) instanceof AnvilBlockEntity blockEntity) {
                 Containers.dropContents(worldIn, pos, blockEntity);
             }
@@ -70,11 +75,18 @@ abstract class AnvilBlockMixin extends FallingBlock implements EntityBlock {
 
     @Override
     public boolean hasAnalogOutputSignal(BlockState state) {
-        return true;
+        return this.easyanvils$validAnvil();
     }
 
     @Override
     public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos) {
+        if (!this.easyanvils$validAnvil()) return 0;
         return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(worldIn.getBlockEntity(pos));
+    }
+
+    @Unique
+    private boolean easyanvils$validAnvil() {
+        // don't change modded anvils, they usually have their own different behavior from vanilla to justify their usage
+        return this == Blocks.ANVIL || this == Blocks.CHIPPED_ANVIL || this == Blocks.DAMAGED_ANVIL;
     }
 }

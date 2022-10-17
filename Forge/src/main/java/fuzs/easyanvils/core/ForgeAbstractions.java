@@ -1,17 +1,20 @@
 package fuzs.easyanvils.core;
 
-import fuzs.easyanvils.handler.AnvilRepairContext;
-import fuzs.easyanvils.handler.ForgeAnvilRepairContext;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.ForgeHooks;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.function.IntConsumer;
+public final class ForgeAbstractions implements CommonAbstractions {
 
-public class ForgeAbstractions implements CommonAbstractions {
+    public boolean onAnvilChange(AnvilMenu container, @NotNull ItemStack left, @NotNull ItemStack right, Container outputSlot, String name, int baseCost, Player player) {
+        return ForgeHooks.onAnvilChange(container, left, right, outputSlot, name, baseCost, player);
+    }
 
     @Override
-    public AnvilRepairContext anvilRepairContextOf(AnvilMenu anvilMenu, Player player, String itemName, Container resultSlots, IntConsumer repairItemCountCost, IntConsumer cost) {
-        return new ForgeAnvilRepairContext(anvilMenu, player, itemName, resultSlots, repairItemCountCost, cost);
+    public boolean isBookEnchantable(ItemStack inputStack, ItemStack bookStack) {
+        return inputStack.isBookEnchantable(bookStack);
     }
 }
