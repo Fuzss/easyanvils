@@ -13,9 +13,9 @@ import java.util.function.Predicate;
 public class ServerConfig implements ConfigCore {
     @Config(description = "Changes how repairing items in an anvil multiple times will affect the cost of subsequent repairs. In vanilla the penalty doubles with every repair. When set to fixed a constant multiplier will instead be added with every repair.")
     public PriorWorkPenalty priorWorkPenalty = PriorWorkPenalty.FIXED;
-    @Config(description = "Multiplier to use when \"prior_work_penalty\" is set to \"FIXED\". Every subsequent repair will increase by this value in levels.")
+    @Config(description = "Multiplier to use when \"prior_work_penalty\" is set to \"FIXED\". Every subsequent operation will increase by this value in levels.")
     @Config.IntRange(min = 1)
-    public int priorWorkPenaltyMultiplier = 4;
+    public int priorWorkPenaltyMultiplier = 3;
     @Config(description = {"The maximum amount of enchantment level allowed to be spent in an anvil. Everything above will be 'Too Expensive!' and will be disallowed.", "This option isn't that impactful anymore when prior work penalties are disabled; repair costs will basically never reach such a high value anymore."})
     public int maxAnvilRepairCost = 63;
     @Config(description = "Allow using iron blocks to repair an anvil by one stage. Can be automated using dispensers.")
@@ -33,7 +33,7 @@ public class ServerConfig implements ConfigCore {
     public boolean noAnvilMaxLevelLimit = true;
     @Config(description = {"The naming field in anvils and the name tag gui will support formatting codes for setting custom text colors and styles.", "Check out the Minecraft Wiki for all available formatting codes and their usage: https://minecraft.fandom.com/wiki/Formatting_codes#Usage"})
     public boolean renamingSupportsFormatting = true;
-    @Config(description = {"Always allow renaming and repairing items, even when the cost exceeds the max anvil repair cost. The cost will then be capped just below the max cost. This is already done in vanilla for renaming.", "This also prevents the prior work penalty from increasing when the item has only been renamed and/or repaired."})
+    @Config(description = {"Always allow renaming and repairing items, even when the cost exceeds the max anvil repair cost. The cost will then be capped just below the max cost. This is already done in vanilla for renaming.", "This also prevents the prior work penalty from increasing when the item has only been renamed or repaired."})
     public boolean alwaysRenameAndRepair = true;
 
     public enum FreeRenames {

@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
-## [v4.0.3-1.19.2] - 2022-10-17
+## [v4.0.3-1.19.2] - 2022-10-18
 ### Changed
 - The mod no longer changes modded anvils in any way since they usually feature significant differences from the vanilla anvil
 - Overhauled how changes to the anvil mechanic are applied, should no longer interfere with other mods on Forge (Fabric mods will need dedicated integration unfortunately, see `fuzs.easyanvils.api.event.AnvilUpdateCallback`)

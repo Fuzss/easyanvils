@@ -62,11 +62,11 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
         ItemStack right = this.inputSlots.getItem(1);
         String itemName = ((AnvilMenuAccessor) this).getItemName();
         MutableInt cost = new MutableInt();
-        this._createResult(left, right, itemName, cost, i -> ((AnvilMenuAccessor) this).setRepairItemCountCost(i));
+        this.createResult(left, right, itemName, cost, i -> ((AnvilMenuAccessor) this).setRepairItemCountCost(i));
         this.setData(0, cost.intValue());
     }
 
-    private void _createResult(ItemStack left, ItemStack right, String itemName, MutableInt cost, IntConsumer repairItemCountCost) {
+    private void createResult(ItemStack left, ItemStack right, String itemName, MutableInt cost, IntConsumer repairItemCountCost) {
         cost.setValue(1);
         if (left.isEmpty()) {
             this.resultSlots.setItem(0, ItemStack.EMPTY);
@@ -80,7 +80,7 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
             repairItemCountCost.accept(0);
             boolean isBook = false;
 
-            if (ModServices.ABSTRACTIONS.onAnvilChange(this, left, right, this.resultSlots, itemName, baseRepairCost, this.player)) {
+            if (!ModServices.ABSTRACTIONS.onAnvilChange(this, left, right, this.resultSlots, itemName, baseRepairCost, this.player)) {
                 return;
             }
 
@@ -196,13 +196,16 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                 }
             }
 
+            boolean hasRenamedItem = false;
             if (StringUtils.isBlank(itemName)) {
                 if (left.hasCustomHoverName()) {
                     renameOperationCost = EasyAnvils.CONFIG.get(ServerConfig.class).freeRenames.filter.test(left) ? 0 : 1;
+                    hasRenamedItem = true;
                     output.resetHoverName();
                 }
             } else if (!itemName.equals(left.getHoverName().getString())) {
                 renameOperationCost = EasyAnvils.CONFIG.get(ServerConfig.class).freeRenames.filter.test(left) ? 0 : 1;
+                hasRenamedItem = true;
                 output.setHoverName(Component.literal(itemName));
             }
 
@@ -210,11 +213,15 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                 output = ItemStack.EMPTY;
             }
 
-            cost.setValue(baseRepairCost + enchantOperationCost + repairOperationCost + renameOperationCost);
-
-            // when renaming is free make sure to let the item stack pass without being cleared
-            if (enchantOperationCost <= 0 && renameOperationCost == 0 && repairOperationCost == 0) {
-                output = ItemStack.EMPTY;
+            int allOperationsCost = enchantOperationCost + repairOperationCost + renameOperationCost;
+            if (allOperationsCost == 0) {
+                cost.setValue(0);
+                // when renaming is free make sure to let the item stack pass without being cleared
+                if (!hasRenamedItem) {
+                    output = ItemStack.EMPTY;
+                }
+            } else {
+                cost.setValue(baseRepairCost + allOperationsCost);
             }
 
             if (enchantOperationCost == 0 && cost.getValue() >= maxAnvilRepairCost && EasyAnvils.CONFIG.get(ServerConfig.class).alwaysRenameAndRepair) {

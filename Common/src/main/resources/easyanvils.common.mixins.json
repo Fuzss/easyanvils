@@ -6,7 +6,6 @@
   "refmap": "easyanvils.refmap.json",
   "mixins": [
     "AnvilBlockMixin",
-    "AnvilMenuMixin",
     "accessor.AnvilMenuAccessor",
     "accessor.ItemCombinerMenuAccessor"
   ],
