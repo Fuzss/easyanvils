@@ -63,7 +63,9 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
         String itemName = ((AnvilMenuAccessor) this).getItemName();
         MutableInt cost = new MutableInt();
         this.createResult(left, right, itemName, cost, i -> ((AnvilMenuAccessor) this).setRepairItemCountCost(i));
-        this.setData(0, cost.intValue());
+        if (cost.intValue() != -1) {
+            this.setData(0, cost.intValue());
+        }
     }
 
     private void createResult(ItemStack left, ItemStack right, String itemName, MutableInt cost, IntConsumer repairItemCountCost) {
@@ -81,6 +83,7 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
             boolean isBook = false;
 
             if (!ModServices.ABSTRACTIONS.onAnvilChange(this, left, right, this.resultSlots, itemName, baseRepairCost, this.player)) {
+                cost.setValue(-1);
                 return;
             }
 

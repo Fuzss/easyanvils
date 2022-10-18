@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.4-1.19.2] - 2022-10-18
+### Fixed
+- Fixed modded anvil operations always costing only a single enchantment level
+
 ## [v4.0.3-1.19.2] - 2022-10-18
 ### Changed
 - The mod no longer changes modded anvils in any way since they usually feature significant differences from the vanilla anvil
