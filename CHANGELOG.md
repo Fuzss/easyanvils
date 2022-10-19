@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.5-1.19.2] - 2022-10-19
+### Fixed
+- Fixed compatibility with Ledger mod
+
 ## [v4.0.4-1.19.2] - 2022-10-18
 ### Fixed
 - Fixed modded anvil operations always costing only a single enchantment level

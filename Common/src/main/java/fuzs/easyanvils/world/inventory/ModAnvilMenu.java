@@ -6,7 +6,7 @@ import fuzs.easyanvils.core.ModServices;
 import fuzs.easyanvils.init.ModRegistry;
 import fuzs.easyanvils.mixin.accessor.AnvilMenuAccessor;
 import fuzs.easyanvils.mixin.accessor.ItemCombinerMenuAccessor;
-import net.minecraft.Util;
+import fuzs.easyanvils.mixin.accessor.SlotAccessor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -27,16 +27,19 @@ import java.util.function.IntConsumer;
 public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
 
     public ModAnvilMenu(int id, Inventory inventory) {
-        // passing this to super instead of the other constructor is important, vanilla super adds a listener to the SimpleContainer which is required for the renaming edit box
-        // we have nothing in the other constructor that is required on the client anyway
+        // this constructor may not override inputSlots as vanilla adds a listener to it which is necessary client-side for the renaming edit box
+        // so let this go to super instead of the main constructor to skip any inputSlots shenanigans
         super(id, inventory);
     }
 
     public ModAnvilMenu(int id, Inventory inventory, Container inputSlots, ContainerLevelAccess containerLevelAccess) {
         super(id, inventory, containerLevelAccess);
         ((ItemCombinerMenuAccessor) this).setInputSlots(inputSlots);
-        this.slots.set(0, Util.make(new Slot(inputSlots, 0, 27, 47), slot -> slot.index = 0));
-        this.slots.set(1, Util.make(new Slot(inputSlots, 1, 76, 47), slot -> slot.index = 1));
+        // we could also replace slots directly in the slots list as we have direct access to it,
+        // but the Ledger mod hooks into AbstractContainerMenu::addSlot which breaks that mod as we wouldn't be using AbstractContainerMenu::addSlot
+        // (they store the menu as a @NotNull value, leads to an NPE)
+        ((SlotAccessor) this.slots.get(0)).setContainer(inputSlots);
+        ((SlotAccessor) this.slots.get(1)).setContainer(inputSlots);
         this.addSlotListener(this);
     }
 
