@@ -230,3 +230,10 @@ task fabricServer(type: GradleBuild) {
             ':Fabric:runServer'
     ]
 }
+
+task forgeData(type: GradleBuild) {
+    group = '_main'
+    tasks = [
+            ':Forge:runData'
+    ]
+}

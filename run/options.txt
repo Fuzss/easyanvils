@@ -29,6 +29,7 @@ gamma:0.5
 renderDistance:12
 simulationDistance:12
 entityDistanceScaling:1.0
+guiScale:0
 particles:0
 maxFps:120
 graphicsMode:1
@@ -36,7 +37,7 @@ ao:2
 prioritizeChunkUpdates:0
 biomeBlendRadius:2
 renderClouds:"true"
-resourcePacks:["Fabric Mods"]
+resourcePacks:["vanilla","mod_resources"]
 incompatibleResourcePacks:[]
 lastServer:
 lang:en_us
@@ -110,7 +111,9 @@ key_key.hotbar.6:key.keyboard.6
 key_key.hotbar.7:key.keyboard.7
 key_key.hotbar.8:key.keyboard.8
 key_key.hotbar.9:key.keyboard.9
-key_key.modmenu.open_menu:key.keyboard.unknown
+key_key.configured.open_mod_list:key.keyboard.unknown
+key_placebo.toggleTrails:key.keyboard.keypad.9
+key_placebo.toggleWings:key.keyboard.keypad.8
 soundCategory_master:0.102649
 soundCategory_music:0.0
 soundCategory_record:1.0

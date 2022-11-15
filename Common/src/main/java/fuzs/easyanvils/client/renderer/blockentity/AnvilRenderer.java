@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.config.ClientConfig;
-import fuzs.easyanvils.world.level.block.entity.AnvilBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -12,10 +11,12 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.Direction;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AnvilBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
-public class AnvilRenderer implements BlockEntityRenderer<AnvilBlockEntity> {
+public class AnvilRenderer implements BlockEntityRenderer<BlockEntity> {
     private final ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
 
     public AnvilRenderer(BlockEntityRendererProvider.Context context) {
@@ -23,12 +24,12 @@ public class AnvilRenderer implements BlockEntityRenderer<AnvilBlockEntity> {
     }
 
     @Override
-    public void render(AnvilBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+    public void render(BlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (!EasyAnvils.CONFIG.get(ClientConfig.class).renderAnvilContents) return;
         Direction direction = blockEntity.getBlockState().getValue(AnvilBlock.FACING);
         int posData = (int) blockEntity.getBlockPos().asLong();
-        this.renderFlatItem(0, blockEntity.getItem(0), direction, poseStack, bufferSource, packedLight, packedOverlay, posData);
-        this.renderFlatItem(1, blockEntity.getItem(1), direction, poseStack, bufferSource, packedLight, packedOverlay, posData);
+        this.renderFlatItem(0, ((Container) blockEntity).getItem(0), direction, poseStack, bufferSource, packedLight, packedOverlay, posData);
+        this.renderFlatItem(1, ((Container) blockEntity).getItem(1), direction, poseStack, bufferSource, packedLight, packedOverlay, posData);
     }
 
     private void renderFlatItem(int index, ItemStack stack, Direction direction, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, int posData) {

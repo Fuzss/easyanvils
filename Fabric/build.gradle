@@ -12,6 +12,27 @@ archivesBaseName = rootProject.name
 version = "v${modVersion}-${minecraftVersion}-Fabric"
 group = modMavenGroup
 
+loom {
+    mixin.defaultRefmapName = "${modId}.refmap.json"
+
+    runs {
+        client {
+            client()
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            runDir("../run")
+            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
+        }
+        server {
+            server()
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            runDir("../run")
+            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
+        }
+    }
+}
+
 repositories {
     maven {
         name = "Modmuss"
@@ -66,27 +87,6 @@ dependencies {
     modImplementation "io.wispforest:owo-lib:0.8.5+1.19"
     modImplementation "curse.maven:things-fabric-456151:3959573"
     modImplementation("com.jamieswhiteshirt:reach-entity-attributes:2.3.0")
-}
-
-loom {
-    mixin.defaultRefmapName = "${modId}.refmap.json"
-
-    runs {
-        client {
-            client()
-            setConfigName("Fabric Client")
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
-        }
-        server {
-            server()
-            setConfigName("Fabric Server")
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
-        }
-    }
 }
 
 processResources {
@@ -244,7 +244,7 @@ curseforge {
                 requiredDependency 'puzzles-lib'
             }
         }
-        addArtifact sourcesJar
+//        addArtifact sourcesJar
     }
     options {
 //        debug = true
@@ -266,7 +266,7 @@ modrinth {
         gameVersions.add it.trim()
     }
     loaders.add 'fabric'
-    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
+//    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
     dependencies {
         required.project 'fabric-api'
         required.project 'forge-config-api-port'

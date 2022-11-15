@@ -6,28 +6,6 @@ archivesBaseName = rootProject.name
 version = "v${modVersion}-${minecraftVersion}-Common"
 group = modMavenGroup
 
-dependencies {
-    // Minecraft
-    minecraft "com.mojang:minecraft:${minecraftVersion}"
-    mappings loom.layered() {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${minecraftVersion}:${parchmentMappingsVersion}@zip")
-    }
-
-    // Mixin Dependencies
-    implementation 'org.ow2.asm:asm-tree:9.2'
-    implementation 'org.ow2.asm:asm-commons:9.2'
-    implementation 'org.ow2.asm:asm-util:9.2'
-    implementation 'org.spongepowered:mixin:0.8.5'
-
-    // Config Dependencies
-    implementation 'com.electronwill.night-config:core:3.6.5'
-    implementation 'com.electronwill.night-config:toml:3.6.5'
-
-    // Puzzles Lib
-    modImplementation "fuzs.puzzleslib:puzzleslib-common:${puzzlesVersion}"
-}
-
 loom {
     mixin {
         // not sure if this is necessary for common...
@@ -51,6 +29,28 @@ loom {
             runDir("../run")
         }
     }
+}
+
+dependencies {
+    // Minecraft
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+    mappings loom.layered() {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${minecraftVersion}:${parchmentMappingsVersion}@zip")
+    }
+
+    // Mixin Dependencies
+    implementation 'org.ow2.asm:asm-tree:9.2'
+    implementation 'org.ow2.asm:asm-commons:9.2'
+    implementation 'org.ow2.asm:asm-util:9.2'
+    implementation 'org.spongepowered:mixin:0.8.5'
+
+    // Config Dependencies
+    implementation 'com.electronwill.night-config:core:3.6.5'
+    implementation 'com.electronwill.night-config:toml:3.6.5'
+
+    // Puzzles Lib
+    modImplementation "fuzs.puzzleslib:puzzleslib-common:${puzzlesVersion}"
 }
 
 processResources {

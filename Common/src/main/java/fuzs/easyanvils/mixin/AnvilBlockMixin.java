@@ -2,13 +2,9 @@ package fuzs.easyanvils.mixin;
 
 import fuzs.easyanvils.init.ModRegistry;
 import fuzs.easyanvils.world.inventory.ModAnvilMenu;
-import fuzs.easyanvils.world.level.block.entity.AnvilBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
+import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
@@ -38,11 +34,11 @@ abstract class AnvilBlockMixin extends FallingBlock implements EntityBlock {
     public void easyanvils$use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> callbackInfo) {
         if (!this.easyanvils$validAnvil()) return;
         if (!worldIn.isClientSide) {
-            if (worldIn.getBlockEntity(pos) instanceof AnvilBlockEntity blockEntity) {
+            if (worldIn.getBlockEntity(pos) instanceof MenuProvider blockEntity) {
                 player.openMenu(blockEntity);
-                if (player.containerMenu instanceof ModAnvilMenu) {
+                if (player.containerMenu instanceof ModAnvilMenu && blockEntity instanceof Container container) {
                     // items might still be in inventory slots, so this needs to update so that correct result is shown
-                    player.containerMenu.slotsChanged(blockEntity);
+                    player.containerMenu.slotsChanged(container);
                 }
                 player.awardStat(Stats.INTERACT_WITH_ANVIL);
                 callbackInfo.setReturnValue(InteractionResult.CONSUME);
@@ -53,7 +49,9 @@ abstract class AnvilBlockMixin extends FallingBlock implements EntityBlock {
     @Inject(method = "getMenuProvider", at = @At("HEAD"), cancellable = true)
     public void easyanvils$getMenuProvider(BlockState state, Level level, BlockPos pos, CallbackInfoReturnable<MenuProvider> callback) {
         if (!this.easyanvils$validAnvil()) return;
-        callback.setReturnValue(level.getBlockEntity(pos) instanceof MenuProvider blockEntity ? blockEntity : null);
+        if (level.getBlockEntity(pos) instanceof MenuProvider blockEntity) {
+            callback.setReturnValue(blockEntity);
+        }
     }
 
     @Nullable
@@ -66,7 +64,7 @@ abstract class AnvilBlockMixin extends FallingBlock implements EntityBlock {
     @Override
     public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
         if (this.easyanvils$validAnvil() && !state.is(newState.getBlock())) {
-            if (worldIn.getBlockEntity(pos) instanceof AnvilBlockEntity blockEntity) {
+            if (worldIn.getBlockEntity(pos) instanceof Container blockEntity) {
                 Containers.dropContents(worldIn, pos, blockEntity);
             }
         }

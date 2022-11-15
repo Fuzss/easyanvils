@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 
-public class AnvilBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
+public class AnvilBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ContainerImpl {
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(2, ItemStack.EMPTY);
 
     public AnvilBlockEntity(BlockPos blockPos, BlockState blockState) {
@@ -60,41 +60,8 @@ public class AnvilBlockEntity extends BaseContainerBlockEntity implements Worldl
     }
 
     @Override
-    public int getContainerSize() {
-        return this.inventory.size();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        for (ItemStack itemstack : this.inventory) {
-            if (!itemstack.isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public ItemStack getItem(int index) {
-        return index >= 0 && index < this.inventory.size() ? this.inventory.get(index) : ItemStack.EMPTY;
-    }
-
-    @Override
-    public ItemStack removeItem(int index, int count) {
-        return ContainerHelper.removeItem(this.inventory, index, count);
-    }
-
-    @Override
-    public ItemStack removeItemNoUpdate(int index) {
-        return ContainerHelper.takeItem(this.inventory, index);
-    }
-
-    @Override
-    public void setItem(int index, ItemStack stack) {
-        if (index >= 0 && index < this.inventory.size()) {
-            this.inventory.set(index, stack);
-            this.setChanged();
-        }
+    public NonNullList<ItemStack> items() {
+        return this.inventory;
     }
 
     @Override
@@ -105,17 +72,6 @@ public class AnvilBlockEntity extends BaseContainerBlockEntity implements Worldl
         } else {
             return !(player.distanceToSqr(this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 0.5, this.worldPosition.getZ() + 0.5) > 64.0);
         }
-    }
-
-    @Override
-    public void clearContent() {
-        this.inventory.clear();
-        this.setChanged();
-    }
-
-    @Override
-    public boolean canPlaceItem(int index, ItemStack stack) {
-        return index >= 0 && index < this.inventory.size();
     }
 
     @Override

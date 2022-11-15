@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.6-1.19.2] - 2022-11-15
+### Fixed
+- Fixed compatibility with Apotheosis (Forge) and Things (Fabric) mod
+
 ## [v4.0.5-1.19.2] - 2022-10-19
 ### Fixed
 - Fixed compatibility with Ledger mod
