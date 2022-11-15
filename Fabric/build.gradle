@@ -29,6 +29,10 @@ repositories {
         name = "jamieswhiteshirt"
         url = "https://maven.jamieswhiteshirt.com/libs-release/"
     }
+    maven {
+        name = 'wispforest'
+        url = 'https://maven.wispforest.io'
+    }
 }
 
 dependencies {
@@ -52,6 +56,16 @@ dependencies {
 
     // Puzzles Lib
     modImplementation "fuzs.puzzleslib:puzzleslib-fabric:${puzzlesVersion}"
+
+    // Things mod
+    modImplementation "dev.emi:trinkets:3.4.0"
+    modApi("me.shedaniel.cloth:cloth-config-fabric:8.2.88") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    modImplementation "vazkii.patchouli:Patchouli:1.19.2-77-FABRIC"
+    modImplementation "io.wispforest:owo-lib:0.8.5+1.19"
+    modImplementation "curse.maven:things-fabric-456151:3959573"
+    modImplementation("com.jamieswhiteshirt:reach-entity-attributes:2.3.0")
 }
 
 loom {
@@ -63,14 +77,14 @@ loom {
             setConfigName("Fabric Client")
             ideConfigGenerated(true)
             runDir("../run")
-            vmArg '-Dmixin.debug.export=true'
+            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
         }
         server {
             server()
             setConfigName("Fabric Server")
             ideConfigGenerated(true)
             runDir("../run")
-            vmArg '-Dmixin.debug.export=true'
+            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
         }
     }
 }

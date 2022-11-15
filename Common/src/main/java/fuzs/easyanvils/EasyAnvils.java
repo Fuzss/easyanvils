@@ -1,6 +1,7 @@
 package fuzs.easyanvils;
 
 import fuzs.easyanvils.config.ClientConfig;
+import fuzs.easyanvils.config.CommonConfig;
 import fuzs.easyanvils.config.ServerConfig;
 import fuzs.easyanvils.handler.ItemInteractionHandler;
 import fuzs.easyanvils.init.ModRegistry;
@@ -35,6 +36,7 @@ public class EasyAnvils implements ModConstructor {
     @SuppressWarnings("Convert2MethodRef")
     public static final ConfigHolder CONFIG = CoreServices.FACTORIES
             .clientConfig(ClientConfig.class, () -> new ClientConfig())
+            .commonConfig(CommonConfig.class, () -> new CommonConfig())
             .serverConfig(ServerConfig.class, () -> new ServerConfig());
 
     @Override

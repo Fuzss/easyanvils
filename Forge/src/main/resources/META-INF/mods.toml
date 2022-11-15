@@ -33,7 +33,7 @@ issueTrackerURL="${modIssueUrl}"
     modId="puzzleslib"
     mandatory=true
     versionRange="[${minPuzzlesVersion},)"
-    ordering="NONE"
+    ordering="BEFORE"
     side="BOTH"
 
 [modproperties.${modId}]
