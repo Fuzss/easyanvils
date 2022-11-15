@@ -1,56 +1,106 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+        classpath group: 'org.parchmentmc', name: 'librarian', version: '1.+'
+    }
+}
+
 plugins {
-    id "dev.architectury.loom" version "0.12.+"
-    // this depends on an older version of guava, which loom is incompatible with, so make sure to apply this plugin after loom
-    // haven't found a proper way to manage plugin dependencies otherwise
     id 'me.hypherionmc.cursegradle' version '2.+'
     // cannot apply this in the base build.gradle as it'll be the same for all subprojects, only one configuration will work
     id 'com.modrinth.minotaur' version '2.+'
 }
 
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
+
 archivesBaseName = rootProject.name
 version = "v${modVersion}-${minecraftVersion}-Forge"
 group = modMavenGroup
 
-loom {
-    silentMojangMappingsLicense()
-    mixin.defaultRefmapName = "${modId}.refmap.json"
+minecraft {
+    mappings channel: 'parchment', version: "${parchmentMappingsVersion}-${minecraftVersion}"
+//    mappings channel: 'official', version: "${minecraftVersion}"
 
     runs {
         client {
-            client()
-            setConfigName("Forge Client")
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
+            workingDirectory project.file('../run')
+            jvmArgs '-Xms1G', '-Xmx4G'
+            property 'fml.earlyprogresswindow', 'false'
+            if (project(":Common").file("src/main/resources/${modId}.common.mixins.json").exists()) {
+                arg "-mixin.config=${modId}.common.mixins.json"
+            }
+            if (project.file("src/main/resources/${modId}.forge.mixins.json").exists()) {
+                arg "-mixin.config=${modId}.forge.mixins.json"
+            }
+            ideaModule "${rootProject.name}.${project.name}.main"
+            taskName 'Client'
+            property 'terminal.ansi', 'true'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            property 'mixin.debug.export', 'true'
+            mods {
+                modClientRun {
+                    source sourceSets.main
+                    source project(":Common").sourceSets.main
+                }
+            }
         }
+
         server {
-            server()
-            setConfigName("Forge Server")
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
+            workingDirectory project.file('../run')
+            jvmArgs '-Xms1G', '-Xmx4G'
+            arg 'nogui'
+            if (project(":Common").file("src/main/resources/${modId}.common.mixins.json").exists()) {
+                arg "-mixin.config=${modId}.common.mixins.json"
+            }
+            if (project.file("src/main/resources/${modId}.forge.mixins.json").exists()) {
+                arg "-mixin.config=${modId}.forge.mixins.json"
+            }
+            ideaModule "${rootProject.name}.${project.name}.main"
+            taskName 'Server'
+            property 'terminal.ansi', 'true'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            property 'mixin.debug.export', 'true'
+            mods {
+                modServerRun {
+                    source sourceSets.main
+                    source project(":Common").sourceSets.main
+                }
+            }
         }
-    }
 
-
-    forge {
-        if (project(":Common").file("src/main/resources/${modId}.common.mixins.json").exists()) {
-            mixinConfig "${modId}.common.mixins.json"
-        }
-
-        if (project.file("src/main/resources/${modId}.forge.mixins.json").exists()) {
-            mixinConfig "${modId}.forge.mixins.json"
-        }
-
-        dataGen {
-            mod project.modId
-        }
-    }
-
-    launches {
         data {
-            arg '--existing', project(":Common").file('src/main/resources/').absolutePath
-//            arg '--output', file('src/generated/resources/').absolutePath
+            workingDirectory project.file('../run')
+            jvmArgs '-Xms1G', '-Xmx4G'
+            if (project(":Common").file("src/main/resources/${modId}.common.mixins.json").exists()) {
+                arg "-mixin.config=${modId}.common.mixins.json"
+            }
+            if (project.file("src/main/resources/${modId}.forge.mixins.json").exists()) {
+                arg "-mixin.config=${modId}.forge.mixins.json"
+            }
+            args '--mod', modId, '--all', '--output', project(":Common").file('src/generated/resources/').absolutePath, '--existing', project(":Common").file('src/main/resources/').absolutePath
+            ideaModule "${rootProject.name}.${project.name}.main"
+            taskName 'Data'
+            property 'terminal.ansi', 'true'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            property 'mixin.debug.export', 'true'
+            mods {
+                modDataRun {
+                    source sourceSets.main
+                    source project(":Common").sourceSets.main
+                }
+            }
         }
     }
 }
@@ -60,24 +110,33 @@ dependencies {
     compileOnly project(":Common")
 
     // Minecraft
-    minecraft "com.mojang:minecraft:${minecraftVersion}"
-    mappings loom.layered() {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${minecraftVersion}:${parchmentMappingsVersion}@zip")
-    }
-    forge "net.minecraftforge:forge:${forgeVersion}"
+    minecraft "net.minecraftforge:forge:${forgeVersion}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     // Quality of Life Mods
-    modRuntimeOnly "curse.maven:catalogue-459701:3873264"
-    modRuntimeOnly "fuzs.bettermodsbutton:bettermodsbutton-forge:4.2.0"
-    modRuntimeOnly "curse.maven:configured-457570:4011355"
+    runtimeOnly fg.deobf("curse.maven:catalogue-459701:3873264")
+    runtimeOnly fg.deobf("fuzs.bettermodsbutton:bettermodsbutton-forge:4.2.0")
+//    runtimeOnly fg.deobf("curse.maven:configmenusforge-544048:3822820")
+//    runtimeOnly fg.deobf("curse.maven:configured-457570:3903908")
 
     // Puzzles Lib
-    modImplementation "fuzs.puzzleslib:puzzleslib-forge:${puzzlesVersion}"
+    implementation fg.deobf("fuzs.puzzleslib:puzzleslib-forge:${puzzlesVersion}")
 
     // Apotheosis
-    modImplementation "curse.maven:placebo-283644:4036338"
-    modImplementation "curse.maven:apotheosis-313970:4036357"
+    implementation fg.deobf("curse.maven:placebo-283644:4036338")
+    implementation fg.deobf("curse.maven:apotheosis-313970:4036357")
+}
+
+mixin {
+    if (project.file("src/main/resources/${modId}.forge.mixins.json").exists() || project(":Common").file("src/main/resources/${modId}.common.mixins.json").exists()) {
+        add project(":Common").sourceSets.main, "${modId}.refmap.json"
+    }
+    if (project(":Common").file("src/main/resources/${modId}.common.mixins.json").exists()) {
+        config "${modId}.common.mixins.json"
+    }
+    if (project.file("src/main/resources/${modId}.forge.mixins.json").exists()) {
+        config "${modId}.forge.mixins.json"
+    }
 }
 
 processResources {
@@ -85,7 +144,9 @@ processResources {
         // we need to have this in common so that in a non-production environment the common jar is correctly deobfuscated
         exclude("quilt.mod.json")
     }
-    exclude('.cache/')
+    from(file('src/generated/resources')) {
+        exclude('.cache/')
+    }
 
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 
@@ -148,12 +209,18 @@ javadoc {
     source project(":Common").sourceSets.main.allJava
 }
 
+// important: the task may not run before 'compileJava', otherwise overridden/shadowed fields and methods in mixin classes will not be reobfuscated
+jar.finalizedBy("configureReobfTaskForReobfJar")
+jar.finalizedBy('reobfJar')
+
 publishing {
     publications {
         mavenJava (MavenPublication) {
             artifactId = "${modId}-forge"
             version = modVersion
             from components.java
+            // strip Forge dependency from POM
+            fg.component(it)
             pom {
                 name = "${modName} [Forge]"
                 description = "${modDescription}"
@@ -205,6 +272,18 @@ publishing {
 signing {
     sign publishing.publications.mavenJava
 }
+
+task signJar(type: net.minecraftforge.gradle.common.tasks.SignJar, dependsOn: jar) {
+    onlyIf { project.hasProperty('keyStore') }
+    keyStore = project.findProperty('keyStore')
+    alias = project.findProperty('keyStoreAlias')
+    storePass = project.findProperty('keyStorePass')
+    keyPass = project.findProperty('keyStoreKeyPass')
+    inputFile = outputFile = jar.archivePath
+}
+
+jar.finalizedBy 'signJar'
+signJar.mustRunAfter 'reobfJar'
 
 curseforge {
     if (!file('../CHANGELOG.md').canRead()) { throw new FileNotFoundException("Could not read changelog file") }
@@ -299,5 +378,5 @@ task refreshUpdateJson {
     }
 }
 
-task("forgeBuild").finalizedBy project.tasks.copyJarToDir, rootProject.tasks.incrementBuildNumber
+build.finalizedBy project.tasks.copyJarToDir, rootProject.tasks.incrementBuildNumber
 [tasks.modrinth, tasks.curseforge].each {it.finalizedBy project.tasks.refreshUpdateJson}
