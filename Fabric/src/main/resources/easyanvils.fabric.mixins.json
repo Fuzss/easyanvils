@@ -5,7 +5,7 @@
   "package": "fuzs.easyanvils.mixin",
   "refmap": "easyanvils.refmap.json",
   "mixins": [
-    "FabricAnvilMenuMixin"
+    "AnvilMenuFabricMixin"
   ],
   "client": [
   ],

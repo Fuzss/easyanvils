@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.7-1.19.2] - 2023-03-06
+### Changed
+- Easy Anvil now is much more careful when applying any changes to anvil mechanics in regard to other mods
+- All changes to those mechanics from any other mod take precedence (like a new anvil recipe), Easy Anvils only takes effect if the outcome would be the same as vanilla
+- This change is necessary to offer out-of-the-box compatibility with many mods which previously broke due to Easy Anvils
+
 ## [v4.0.6-1.19.2] - 2022-11-15
 ### Fixed
 - Fixed compatibility with Apotheosis (Forge) and Things (Fabric) mod

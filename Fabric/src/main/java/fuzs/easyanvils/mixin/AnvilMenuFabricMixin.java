@@ -20,17 +20,17 @@ import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AnvilMenu.class)
-abstract class FabricAnvilMenuMixin extends ItemCombinerMenu {
+abstract class AnvilMenuFabricMixin extends ItemCombinerMenu {
     @Unique
-    private float easyanvils_breakChance;
+    private float easyanvils$breakChance;
 
-    public FabricAnvilMenuMixin(@Nullable MenuType<?> menuType, int i, Inventory inventory, ContainerLevelAccess containerLevelAccess) {
+    public AnvilMenuFabricMixin(@Nullable MenuType<?> menuType, int i, Inventory inventory, ContainerLevelAccess containerLevelAccess) {
         super(menuType, i, inventory, containerLevelAccess);
     }
 
     @Inject(method = "onTake", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/Container;setItem(ILnet/minecraft/world/item/ItemStack;)V"), slice = @Slice(to = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getCount()I")))
     protected void onTake$inject$invoke$setItem(Player player, ItemStack itemStack, CallbackInfo callback) {
-        this.easyanvils_breakChance = (float) AnvilRepairCallback.EVENT.invoker().onAnvilRepair(player, this.inputSlots.getItem(0), this.inputSlots.getItem(1), itemStack, 0.12).orElseThrow();
+        this.easyanvils$breakChance = (float) AnvilRepairCallback.EVENT.invoker().onAnvilRepair(player, this.inputSlots.getItem(0), this.inputSlots.getItem(1), itemStack, 0.12).orElseThrow();
     }
 
     @Inject(method = "onTake", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/DataSlot;set(I)V", shift = At.Shift.AFTER), cancellable = true)
@@ -38,7 +38,7 @@ abstract class FabricAnvilMenuMixin extends ItemCombinerMenu {
         // just copy this part from vanilla, not in the mood to mixin into this lambda
         this.access.execute((level, blockPos) -> {
             BlockState blockState = level.getBlockState(blockPos);
-            if (!player.getAbilities().instabuild && blockState.is(BlockTags.ANVIL) && player.getRandom().nextFloat() < this.easyanvils_breakChance) {
+            if (!player.getAbilities().instabuild && blockState.is(BlockTags.ANVIL) && player.getRandom().nextFloat() < this.easyanvils$breakChance) {
                 BlockState blockState2 = AnvilBlock.damage(blockState);
                 if (blockState2 == null) {
                     level.removeBlock(blockPos, false);

@@ -19,17 +19,19 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.Map;
-import java.util.function.IntConsumer;
 
 public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
+    private final AnvilMenuState builtInAnvilState;
+    private final AnvilMenuState vanillaAnvilState;
 
     public ModAnvilMenu(int id, Inventory inventory) {
         // this constructor may not override inputSlots as vanilla adds a listener to it which is necessary client-side for the renaming edit box
         // so let this go to super instead of the main constructor to skip any inputSlots shenanigans
         super(id, inventory);
+        this.builtInAnvilState = new BuiltInAnvilMenu(inventory);
+        this.vanillaAnvilState = new VanillaAnvilMenu(inventory);
     }
 
     public ModAnvilMenu(int id, Inventory inventory, Container inputSlots, ContainerLevelAccess containerLevelAccess) {
@@ -41,6 +43,8 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
         ((SlotAccessor) this.slots.get(0)).setContainer(inputSlots);
         ((SlotAccessor) this.slots.get(1)).setContainer(inputSlots);
         this.addSlotListener(this);
+        this.builtInAnvilState = new BuiltInAnvilMenu(inventory);
+        this.vanillaAnvilState = new VanillaAnvilMenu(inventory);
     }
 
     @Override
@@ -61,34 +65,35 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
 
     @Override
     public void createResult() {
+        // this is called during <init> when these aren't populated yet
+        if (this.builtInAnvilState == null || this.vanillaAnvilState == null) return;
         ItemStack left = this.inputSlots.getItem(0);
         ItemStack right = this.inputSlots.getItem(1);
-        String itemName = ((AnvilMenuAccessor) this).getItemName();
-        MutableInt cost = new MutableInt();
-        this.createResult(left, right, itemName, cost, i -> ((AnvilMenuAccessor) this).setRepairItemCountCost(i));
-        if (cost.intValue() != -1) {
-            this.setData(0, cost.intValue());
+        String itemName = ((AnvilMenuAccessor) this).easyanvils$getItemName();
+        this.builtInAnvilState.init(left, right, itemName);
+        this.vanillaAnvilState.init(left, right, itemName);
+        this.builtInAnvilState.createResult();
+        this.vanillaAnvilState.createResult();
+        if (!AnvilMenuState.equals(this.builtInAnvilState, this.vanillaAnvilState)) {
+            super.createResult();
+        } else {
+            this.createResult(left, right, itemName);
         }
     }
 
-    private void createResult(ItemStack left, ItemStack right, String itemName, MutableInt cost, IntConsumer repairItemCountCost) {
-        cost.setValue(1);
+    private void createResult(ItemStack left, ItemStack right, String itemName) {
+        this.setCost(1);
         if (left.isEmpty()) {
             this.resultSlots.setItem(0, ItemStack.EMPTY);
-            cost.setValue(0);
+            this.setCost(0);
         } else {
             ItemStack output = left.copy();
             Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(output);
             int baseRepairCost = left.getBaseRepairCost() + (right.isEmpty() ? 0 : right.getBaseRepairCost());
             // no prior work penalty, or fixed
             baseRepairCost = EasyAnvils.CONFIG.get(ServerConfig.class).priorWorkPenalty.operator.applyAsInt(baseRepairCost);
-            repairItemCountCost.accept(0);
+            this.setRepairItemCountCost(0);
             boolean isBook = false;
-
-            if (!ModServices.ABSTRACTIONS.onAnvilChange(this, left, right, this.resultSlots, itemName, baseRepairCost, this.player)) {
-                cost.setValue(-1);
-                return;
-            }
 
             int repairOperationCost = 0;
             int enchantOperationCost = 0;
@@ -100,7 +105,7 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                     int l2 = Math.min(output.getDamageValue(), output.getMaxDamage() / 4);
                     if (l2 <= 0) {
                         this.resultSlots.setItem(0, ItemStack.EMPTY);
-                        cost.setValue(0);
+                        this.setCost(0);
                         return;
                     }
 
@@ -112,11 +117,11 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                         l2 = Math.min(output.getDamageValue(), output.getMaxDamage() / 4);
                     }
 
-                    repairItemCountCost.accept(repairMaterials);
+                    this.setRepairItemCountCost(repairMaterials);
                 } else {
                     if (!isBook && (!output.is(right.getItem()) || !output.isDamageableItem())) {
                         this.resultSlots.setItem(0, ItemStack.EMPTY);
-                        cost.setValue(0);
+                        this.setCost(0);
                         return;
                     }
 
@@ -196,7 +201,7 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
 
                     if (flag3 && !flag2) {
                         this.resultSlots.setItem(0, ItemStack.EMPTY);
-                        cost.setValue(0);
+                        this.setCost(0);
                         return;
                     }
                 }
@@ -221,21 +226,21 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
 
             int allOperationsCost = enchantOperationCost + repairOperationCost + renameOperationCost;
             if (allOperationsCost == 0) {
-                cost.setValue(0);
+                this.setCost(0);
                 // when renaming is free make sure to let the item stack pass without being cleared
                 if (!hasRenamedItem) {
                     output = ItemStack.EMPTY;
                 }
             } else {
-                cost.setValue(baseRepairCost + allOperationsCost);
+                this.setCost(baseRepairCost + allOperationsCost);
             }
 
-            if (enchantOperationCost == 0 && cost.getValue() >= maxAnvilRepairCost && EasyAnvils.CONFIG.get(ServerConfig.class).alwaysRenameAndRepair) {
-                cost.setValue(maxAnvilRepairCost - 1);
+            if (enchantOperationCost == 0 && this.getCost() >= maxAnvilRepairCost && EasyAnvils.CONFIG.get(ServerConfig.class).alwaysRenameAndRepair) {
+                this.setCost(maxAnvilRepairCost - 1);
             }
 
             // allow for custom max enchantment levels limit
-            if (cost.getValue() >= maxAnvilRepairCost && !this.player.getAbilities().instabuild) {
+            if (this.getCost() >= maxAnvilRepairCost && !this.player.getAbilities().instabuild) {
                 output = ItemStack.EMPTY;
             }
 
@@ -259,6 +264,14 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
             this.resultSlots.setItem(0, output);
             this.broadcastChanges();
         }
+    }
+
+    public void setCost(int cost) {
+        this.setData(0, cost);
+    }
+
+    public void setRepairItemCountCost(int repairItemCountCost) {
+        ((AnvilMenuAccessor) this).easyanvils$setRepairItemCountCost(repairItemCountCost);
     }
 
     @Override

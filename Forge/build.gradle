@@ -123,8 +123,8 @@ dependencies {
     implementation fg.deobf("fuzs.puzzleslib:puzzleslib-forge:${puzzlesVersion}")
 
     // Apotheosis
-    implementation fg.deobf("curse.maven:placebo-283644:4036338")
-    implementation fg.deobf("curse.maven:apotheosis-313970:4036357")
+    implementation fg.deobf("curse.maven:placebo-283644:4344915")
+    implementation fg.deobf("curse.maven:apotheosis-313970:4345076")
 }
 
 mixin {

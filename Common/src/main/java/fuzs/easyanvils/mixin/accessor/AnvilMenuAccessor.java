@@ -7,9 +7,15 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(AnvilMenu.class)
 public interface AnvilMenuAccessor {
 
-    @Accessor
-    String getItemName();
+    @Accessor("itemName")
+    String easyanvils$getItemName();
 
-    @Accessor
-    void setRepairItemCountCost(int repairItemCountCost);
+    @Accessor("itemName")
+    void easyanvils$setItemName(String itemName);
+
+    @Accessor("repairItemCountCost")
+    int easyanvils$getRepairItemCountCost();
+
+    @Accessor("repairItemCountCost")
+    void easyanvils$setRepairItemCountCost(int repairItemCountCost);
 }

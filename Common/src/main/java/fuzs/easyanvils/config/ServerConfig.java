@@ -17,6 +17,7 @@ public class ServerConfig implements ConfigCore {
     @Config.IntRange(min = 1)
     public int priorWorkPenaltyMultiplier = 3;
     @Config(description = {"The maximum amount of enchantment level allowed to be spent in an anvil. Everything above will be 'Too Expensive!' and will be disallowed.", "This option isn't that impactful anymore when prior work penalties are disabled; repair costs will basically never reach such a high value anymore."})
+    @Config.IntRange(min = 1)
     public int maxAnvilRepairCost = 63;
     @Config(description = "Allow using iron blocks to repair an anvil by one stage. Can be automated using dispensers.")
     public boolean anvilRepairing = true;

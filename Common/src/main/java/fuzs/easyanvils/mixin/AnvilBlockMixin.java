@@ -84,7 +84,7 @@ abstract class AnvilBlockMixin extends FallingBlock implements EntityBlock {
 
     @Unique
     private boolean easyanvils$validAnvil() {
-        // don't change modded anvils, they usually have their own different behavior from vanilla to justify their usage
+        // don't change modded anvils, they usually have their own different behavior from vanilla to justify their existence
         return this == Blocks.ANVIL || this == Blocks.CHIPPED_ANVIL || this == Blocks.DAMAGED_ANVIL;
     }
 }

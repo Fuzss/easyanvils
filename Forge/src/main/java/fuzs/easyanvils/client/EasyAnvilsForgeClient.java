@@ -2,7 +2,7 @@ package fuzs.easyanvils.client;
 
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.client.handler.NameTagTooltipHandler;
-import fuzs.puzzleslib.client.core.ClientCoreServices;
+import fuzs.puzzleslib.client.core.ClientFactories;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -15,7 +15,7 @@ public class EasyAnvilsForgeClient {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
-        ClientCoreServices.FACTORIES.clientModConstructor(EasyAnvils.MOD_ID).accept(new EasyAnvilsClient());
+        ClientFactories.INSTANCE.clientModConstructor(EasyAnvils.MOD_ID).accept(new EasyAnvilsClient());
         registerHandlers();
     }
 

@@ -1,7 +1,6 @@
 package fuzs.easyanvils;
 
 import fuzs.easyanvils.config.ClientConfig;
-import fuzs.easyanvils.config.CommonConfig;
 import fuzs.easyanvils.config.ServerConfig;
 import fuzs.easyanvils.handler.ItemInteractionHandler;
 import fuzs.easyanvils.init.ModRegistry;
@@ -10,7 +9,7 @@ import fuzs.easyanvils.network.S2COpenNameTagEditorMessage;
 import fuzs.easyanvils.network.client.C2SNameTagUpdateMessage;
 import fuzs.easyanvils.network.client.C2SRenameItemMessage;
 import fuzs.puzzleslib.config.ConfigHolder;
-import fuzs.puzzleslib.core.CoreServices;
+import fuzs.puzzleslib.core.CommonFactories;
 import fuzs.puzzleslib.core.ModConstructor;
 import fuzs.puzzleslib.network.MessageDirection;
 import fuzs.puzzleslib.network.NetworkHandler;
@@ -32,11 +31,10 @@ public class EasyAnvils implements ModConstructor {
     public static final String MOD_NAME = "Easy Anvils";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
-    public static final NetworkHandler NETWORK = CoreServices.FACTORIES.network(MOD_ID);
+    public static final NetworkHandler NETWORK = CommonFactories.INSTANCE.network(MOD_ID);
     @SuppressWarnings("Convert2MethodRef")
-    public static final ConfigHolder CONFIG = CoreServices.FACTORIES
+    public static final ConfigHolder CONFIG = CommonFactories.INSTANCE
             .clientConfig(ClientConfig.class, () -> new ClientConfig())
-            .commonConfig(CommonConfig.class, () -> new CommonConfig())
             .serverConfig(ServerConfig.class, () -> new ServerConfig());
 
     @Override

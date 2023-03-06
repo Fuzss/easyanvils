@@ -19,9 +19,7 @@ public class ForgeModRegistry {
     public static final RegistryReference<BlockEntityType<BlockEntity>> ANVIL_BLOCK_ENTITY_TYPE = REGISTRY.registerBlockEntityTypeBuilder("anvil", () -> ModBlockEntityTypeBuilder.of(getBlockEntityFactory(), Blocks.ANVIL, Blocks.CHIPPED_ANVIL, Blocks.DAMAGED_ANVIL));
 
     private static ModBlockEntityTypeBuilder.ModBlockEntitySupplier<BlockEntity> getBlockEntityFactory() {
-        boolean apotheosis = ModLoaderEnvironment.INSTANCE.isModLoadedSafe("apotheosis");
-        EasyAnvils.LOGGER.info("is apotheosis loaded {}", apotheosis);
-        if (apotheosis) {
+        if (ModLoaderEnvironment.INSTANCE.isModLoadedSafe("apotheosis")) {
             return new ModBlockEntityTypeBuilder.ModBlockEntitySupplier<BlockEntity>() {
 
                 @Override

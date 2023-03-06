@@ -1,7 +1,5 @@
 package fuzs.easyanvils.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.client.gui.components.OpenEditBox;
 import fuzs.easyanvils.config.ServerConfig;
@@ -18,8 +16,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class ModAnvilScreen extends AnvilScreen {
-    private static final Component TOO_EXPENSIVE_TEXT = Component.translatable("container.repair.expensive");
-
     private EditBox name;
 
     public ModAnvilScreen(AnvilMenu anvilMenu, Inventory inventory, Component component) {
@@ -50,17 +46,15 @@ public class ModAnvilScreen extends AnvilScreen {
         ((AnvilScreenAccessor) this).setName(this.name);
     }
 
-    private void onNameChanged(String name) {
-        if (!name.isEmpty()) {
-            String string = name;
-            Slot slot = this.menu.getSlot(0);
-            if (slot != null && slot.hasItem() && !slot.getItem().hasCustomHoverName() && name.equals(slot.getItem().getHoverName().getString())) {
-                string = "";
-            }
-
-            this.menu.setItemName(string);
-            EasyAnvils.NETWORK.sendToServer(new C2SRenameItemMessage(string));
+    private void onNameChanged(String input) {
+        Slot slot = this.menu.getSlot(0);
+        if (!slot.hasItem()) return;
+        if (!slot.getItem().hasCustomHoverName() && input.equals(slot.getItem().getHoverName().getString())) {
+            input = "";
         }
+
+        this.menu.setItemName(input);
+        EasyAnvils.NETWORK.sendToServer(new C2SRenameItemMessage(input));
     }
 
     @Override
@@ -68,37 +62,6 @@ public class ModAnvilScreen extends AnvilScreen {
         boolean visible = this.name.isVisible();
         super.resize(minecraft, width, height);
         this.name.setVisible(visible);
-    }
-
-    @Override
-    protected void renderLabels(PoseStack poseStack, int mouseX, int mouseY) {
-        RenderSystem.disableBlend();
-        // copied from AbstractContainerScreen super
-        this.font.draw(poseStack, this.title, (float)this.titleLabelX, (float)this.titleLabelY, 4210752);
-        this.font.draw(poseStack, this.playerInventoryTitle, (float)this.inventoryLabelX, (float)this.inventoryLabelY, 4210752);
-        int i = this.menu.getCost();
-        // changed to allow for >= 0
-        if (i >= 0) {
-            int j = 8453920;
-            Component component;
-            // allow for custom max repair cost
-            if (i >= EasyAnvils.CONFIG.get(ServerConfig.class).maxAnvilRepairCost && !this.minecraft.player.getAbilities().instabuild) {
-                component = TOO_EXPENSIVE_TEXT;
-                j = 16736352;
-            } else if (!this.menu.getSlot(2).hasItem()) {
-                component = null;
-            } else {
-                component = Component.translatable("container.repair.cost", i);
-                if (!this.menu.getSlot(2).mayPickup(this.minecraft.player)) {
-                    j = 16736352;
-                }
-            }
-            if (component != null) {
-                int k = this.imageWidth - 8 - this.font.width(component) - 2;
-                fill(poseStack, k - 2, 67, this.imageWidth - 8, 79, 1325400064);
-                this.font.drawShadow(poseStack, component, (float)k, 69.0F, j);
-            }
-        }
     }
 
     @Override
