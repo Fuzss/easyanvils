@@ -46,8 +46,8 @@ public class BuiltInAnvilMenu extends AnvilMenu implements AnvilMenuState {
     }
 
     @Override
-    public int getCost() {
-        return super.getCost();
+    public int getLevelCost() {
+        return this.getCost();
     }
 
     public void setCost(int cost) {
