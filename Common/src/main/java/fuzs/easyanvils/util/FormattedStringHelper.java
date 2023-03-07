@@ -92,6 +92,7 @@ public class FormattedStringHelper {
                         currentStyle = chatFormatting == ChatFormatting.RESET ? defaultStyle : currentStyle.applyLegacyFormat(chatFormatting);
                     }
 
+                    // also feed those chars so they show up in the anvil text box
                     if (feedChar(text, defaultStyle, sink, position, character, textLength) == -1) {
                         return false;
                     }
@@ -104,6 +105,7 @@ public class FormattedStringHelper {
                 }
 
             } else {
+                // weird syntax to allow splitting this into separate method so it can be reused above
                 position = feedChar(text, currentStyle, sink, position, character, textLength);
                 if (position == -1) {
                     return false;
@@ -188,6 +190,35 @@ public class FormattedStringHelper {
 
         public void resetPosition() {
             this.position = 0;
+        }
+    }
+
+    public static class LengthLimitedCharSink implements FormattedCharSink {
+        private final int skip;
+        private int maxLength;
+        private int position;
+
+        public LengthLimitedCharSink(int maxLength, int skip) {
+            this.maxLength = maxLength;
+            this.skip = skip;
+        }
+
+        @Override
+        public boolean accept(int i, Style style, int j) {
+            int charCount = Character.charCount(j);
+            if (i >= this.skip) {
+                this.maxLength -= charCount;
+            } else return false;
+            if (this.maxLength >= 0) {
+//                this.position = i + charCount;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public int getPosition() {
+            return this.position;
         }
     }
 }

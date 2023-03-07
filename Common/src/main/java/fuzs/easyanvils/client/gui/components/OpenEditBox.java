@@ -19,6 +19,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringDecomposer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -79,18 +80,31 @@ public class OpenEditBox extends EditBox {
     private Predicate<String> filter = Objects::nonNull;
     private BiFunction<String, Integer, FormattedCharSequence> formatter = (String formatterValue, Integer position) -> {
         List<FormattedCharSequence> list = Lists.newArrayList();
+        // format the whole value, we need the formatting to apply correctly and not get interrupted by the cursor being placed in between a formatting code
         FormattedStringHelper.iterateFormatted(this.value, Style.EMPTY, (index, style, j) -> {
-            list.add(FormattedCharSequence.forward(Character.toString(j), style));
+//            list.add(FormattedCharSequence.forward(Character.toString(j), style));
+            list.add(formattedCharSink -> formattedCharSink.accept(index, style, j));
             return true;
         });
-        int startIndex;
+        int start;
         if (position == this.cursorPos) {
-            startIndex = this.value.lastIndexOf(formatterValue);
+            start = this.value.lastIndexOf(formatterValue);
         } else {
-            startIndex = this.value.indexOf(formatterValue);
+            start = this.value.indexOf(formatterValue);
         }
-        List<FormattedCharSequence> subList = list.subList(startIndex, startIndex + formatterValue.length());
-        return FormattedCharSequence.composite(subList);
+        int length = formatterValue.codePointCount(0, formatterValue.length());
+        if (start + length > list.size()) {
+            System.out.println();
+        }
+        FormattedStringHelper.LengthLimitedCharSink sink = new FormattedStringHelper.LengthLimitedCharSink(formatterValue.length(), start);
+//        List<FormattedCharSequence> other = Lists.newArrayList();
+//        for (FormattedCharSequence formattedCharSequence : list) {
+//            formattedCharSequence.accept(sink);
+//            if (sink.accept(sink.getPosition(), formattedCharSequence.accept(sink)))
+//        }
+//        list.get(0).accept()
+//        List<FormattedCharSequence> subList = list.subList(startIndex, startIndex + length);
+        return FormattedCharSequence.composite(list.stream().filter(formattedCharSequence -> formattedCharSequence.accept(sink)).toList());
     };
 
     public OpenEditBox(Font font, int i, int j, int k, int l, Component component) {
