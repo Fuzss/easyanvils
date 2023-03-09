@@ -8,7 +8,7 @@ public interface AnvilMenuState {
 
     void init(ItemStack leftInput, ItemStack rightInput, String itemName);
 
-    void createResult();
+    void fillResultSlots();
 
     ItemStack getLeftInput();
 

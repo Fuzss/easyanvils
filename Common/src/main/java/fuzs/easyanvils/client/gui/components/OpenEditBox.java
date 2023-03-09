@@ -2,9 +2,11 @@ package fuzs.easyanvils.client.gui.components;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import fuzs.easyanvils.util.FormattedStringHelper;
+import fuzs.easyanvils.util.ComponentDecomposer;
+import fuzs.easyanvils.util.FormattedStringDecomposer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -19,7 +21,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.minecraft.util.StringDecomposer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -33,20 +34,11 @@ import java.util.function.Predicate;
  * <p>extend EditBox to allow for better compatibility
  */
 public class OpenEditBox extends EditBox {
-    public static final int BACKWARDS = -1;
-    public static final int FORWARDS = 1;
-    private static final int CURSOR_INSERT_WIDTH = 1;
-    private static final int CURSOR_INSERT_COLOR = -3092272;
-    private static final String CURSOR_APPEND_CHARACTER = "_";
-    public static final int DEFAULT_TEXT_COLOR = 14737632;
-    private static final int BORDER_COLOR_FOCUSED = -1;
-    private static final int BORDER_COLOR = -6250336;
-    private static final int BACKGROUND_COLOR = -16777216;
     private final Font font;
     /**
      * Has the current text being edited on the textbox.
      */
-    private String value = "";
+    String value = "";
     private int maxLength = 32;
     private int frame;
     private boolean bordered = true;
@@ -62,12 +54,12 @@ public class OpenEditBox extends EditBox {
     /**
      * The current character index that should be used as start of the rendered text.
      */
-    private int displayPos;
-    private int cursorPos;
+    int displayPos;
+    int cursorPos;
     /**
      * other selection position, maybe the same as the cursor
      */
-    private int highlightPos;
+    int highlightPos;
     private int textColor = 14737632;
     private int textColorUneditable = 7368816;
     @Nullable
@@ -80,32 +72,20 @@ public class OpenEditBox extends EditBox {
     private Predicate<String> filter = Objects::nonNull;
     private BiFunction<String, Integer, FormattedCharSequence> formatter = (String formatterValue, Integer position) -> {
         List<FormattedCharSequence> list = Lists.newArrayList();
+        FormattedStringDecomposer.LengthLimitedCharSink sink = new FormattedStringDecomposer.LengthLimitedCharSink(formatterValue.length(), position);
         // format the whole value, we need the formatting to apply correctly and not get interrupted by the cursor being placed in between a formatting code
-        FormattedStringHelper.iterateFormatted(this.value, Style.EMPTY, (index, style, j) -> {
-//            list.add(FormattedCharSequence.forward(Character.toString(j), style));
-            list.add(formattedCharSink -> formattedCharSink.accept(index, style, j));
+        FormattedStringDecomposer.iterateFormatted(this.value, Style.EMPTY, (index, style, j) -> {
+            if (sink.accept(index, style, j)) {
+                list.add(formattedCharSink -> formattedCharSink.accept(index, style, j));
+            }
             return true;
         });
-        int start;
-        if (position == this.cursorPos) {
-            start = this.value.lastIndexOf(formatterValue);
-        } else {
-            start = this.value.indexOf(formatterValue);
-        }
-        int length = formatterValue.codePointCount(0, formatterValue.length());
-        if (start + length > list.size()) {
-            System.out.println();
-        }
-        FormattedStringHelper.LengthLimitedCharSink sink = new FormattedStringHelper.LengthLimitedCharSink(formatterValue.length(), start);
-//        List<FormattedCharSequence> other = Lists.newArrayList();
-//        for (FormattedCharSequence formattedCharSequence : list) {
-//            formattedCharSequence.accept(sink);
-//            if (sink.accept(sink.getPosition(), formattedCharSequence.accept(sink)))
-//        }
-//        list.get(0).accept()
-//        List<FormattedCharSequence> subList = list.subList(startIndex, startIndex + length);
-        return FormattedCharSequence.composite(list.stream().filter(formattedCharSequence -> formattedCharSequence.accept(sink)).toList());
+        return FormattedCharSequence.composite(list);
     };
+    private long lastClickTime;
+    private int lastClickButton;
+    private boolean doubleClick;
+    public TypeActionManager typeActionManager = new TypeActionManager();
 
     public OpenEditBox(Font font, int i, int j, int k, int l, Component component) {
         this(font, i, j, k, l, null, component);
@@ -150,8 +130,9 @@ public class OpenEditBox extends EditBox {
     @Override
     public void setValue(String text) {
         if (this.filter.test(text)) {
-            if (text.length() > this.maxLength) {
-                this.value = text.substring(0, this.maxLength);
+            int aboveMaxLength = ComponentDecomposer.getStringLength(text) - this.maxLength;
+            if (aboveMaxLength > 0) {
+                this.value = ComponentDecomposer.removeLast(text, aboveMaxLength);
             } else {
                 this.value = text;
             }
@@ -180,6 +161,10 @@ public class OpenEditBox extends EditBox {
         return this.value.substring(i, j);
     }
 
+    public boolean hasHighlighted() {
+        return this.highlightPos != this.cursorPos;
+    }
+
     @Override
     public void setFilter(Predicate<String> validator) {
         this.filter = validator;
@@ -192,17 +177,16 @@ public class OpenEditBox extends EditBox {
     public void insertText(String textToWrite) {
         int i = Math.min(this.cursorPos, this.highlightPos);
         int j = Math.max(this.cursorPos, this.highlightPos);
-        int k = this.maxLength - this.value.length() - (i - j);
-        String string = FormattedStringHelper.filterText(textToWrite);
-        int l = string.length();
-        if (k < l) {
-            string = string.substring(0, k);
-            l = k;
+        String string = FormattedStringDecomposer.filterText(textToWrite);
+        String string3 = new StringBuilder(this.value).replace(i, j, string).toString();
+        int stringLength = ComponentDecomposer.getStringLength(string3) - this.maxLength;
+        if (stringLength > 0) {
+            string = ComponentDecomposer.removeLast(textToWrite, stringLength);
         }
-
         String string2 = new StringBuilder(this.value).replace(i, j, string).toString();
         if (this.filter.test(string2)) {
             this.value = string2;
+            int l = string.length();
             this.setCursorPosition(i + l);
             this.setHighlightPos(this.cursorPos);
             this.onValueChange(this.value);
@@ -210,6 +194,7 @@ public class OpenEditBox extends EditBox {
     }
 
     private void onValueChange(String newText) {
+        this.typeActionManager.trySave(this);
         if (this.responder != null) {
             this.responder.accept(newText);
         }
@@ -218,6 +203,8 @@ public class OpenEditBox extends EditBox {
 
     private void deleteText(int count) {
         if (Screen.hasControlDown()) {
+            this.deleteChars(this.cursorPos);
+        } else if (Screen.hasAltDown()) {
             this.deleteWords(count);
         } else {
             this.deleteChars(count);
@@ -282,23 +269,24 @@ public class OpenEditBox extends EditBox {
      */
     private int getWordPosition(int n, int pos, boolean skipWs) {
         int i = pos;
-        boolean bl = n < 0;
-        int j = Math.abs(n);
+        boolean backwards = n < 0;
+        int skippedWords = Math.abs(n);
 
-        for (int k = 0; k < j; ++k) {
-            if (!bl) {
+        for (int k = 0; k < skippedWords; ++k) {
+            if (!backwards) {
                 int l = this.value.length();
-                i = this.value.indexOf(32, i);
-                if (i == -1) {
-                    i = l;
-                } else {
-                    while (skipWs && i < l && this.value.charAt(i) == ' ') {
-                        ++i;
-                    }
+                while (skipWs && i == pos && i < l && this.value.charAt(i) == ' ') {
+                    ++i;
+                    pos++;
+                }
+
+                while (i < l && this.value.charAt(i) != ' ') {
+                    ++i;
                 }
             } else {
-                while (skipWs && i > 0 && this.value.charAt(i - 1) == ' ') {
+                while (skipWs && i == pos && i > 0 && this.value.charAt(i - 1) == ' ') {
                     --i;
+                    pos--;
                 }
 
                 while (i > 0 && this.value.charAt(i - 1) != ' ') {
@@ -338,6 +326,7 @@ public class OpenEditBox extends EditBox {
     @Override
     public void setCursorPosition(int pos) {
         this.cursorPos = Mth.clamp(pos, 0, this.value.length());
+        this.setDisplayPosition(this.cursorPos);
     }
 
     /**
@@ -354,6 +343,14 @@ public class OpenEditBox extends EditBox {
     @Override
     public void moveCursorToEnd() {
         this.moveCursorTo(this.value.length());
+    }
+
+    public static boolean isUndo(int keyCode) {
+        return keyCode == InputConstants.KEY_Y && Screen.hasControlDown() && !Screen.hasShiftDown() && !Screen.hasAltDown();
+    }
+
+    public static boolean isRedo(int keyCode) {
+        return keyCode == InputConstants.KEY_Y && Screen.hasControlDown() && Screen.hasShiftDown() && !Screen.hasAltDown();
     }
 
     @Override
@@ -382,7 +379,16 @@ public class OpenEditBox extends EditBox {
                 }
 
                 return true;
+            } else if (isUndo(keyCode)) {
+                this.typeActionManager.undo(this);
+
+                return true;
+            } else if (isRedo(keyCode)) {
+                this.typeActionManager.redo(this);
+
+                return true;
             } else {
+                boolean canMove;
                 switch (keyCode) {
                     case 259:
                         if (this.isEditable) {
@@ -408,17 +414,35 @@ public class OpenEditBox extends EditBox {
 
                         return true;
                     case 262:
+                        canMove = true;
+                        if (!this.shiftPressed && this.hasHighlighted()) {
+                            this.setCursorPosition(Math.max(this.getCursorPosition(), this.highlightPos));
+                            this.setHighlightPos(this.getCursorPosition());
+                            canMove = false;
+                        }
+
                         if (Screen.hasControlDown()) {
+                            this.moveCursorToEnd();
+                        } else if (Screen.hasAltDown()) {
                             this.moveCursorTo(this.getWordPosition(1));
-                        } else {
+                        } else if (canMove) {
                             this.moveCursor(1);
                         }
 
                         return true;
                     case 263:
+                        canMove = true;
+                        if (!this.shiftPressed && this.hasHighlighted()) {
+                            this.setCursorPosition(Math.min(this.getCursorPosition(), this.highlightPos));
+                            this.setHighlightPos(this.getCursorPosition());
+                            canMove = false;
+                        }
+
                         if (Screen.hasControlDown()) {
+                            this.moveCursorToStart();
+                        } else if (Screen.hasAltDown()) {
                             this.moveCursorTo(this.getWordPosition(-1));
-                        } else {
+                        } else if (canMove) {
                             this.moveCursor(-1);
                         }
 
@@ -443,7 +467,7 @@ public class OpenEditBox extends EditBox {
     public boolean charTyped(char codePoint, int modifiers) {
         if (!this.canConsumeInput()) {
             return false;
-        } else if (FormattedStringHelper.isAllowedChatCharacter(codePoint)) {
+        } else if (FormattedStringDecomposer.isAllowedChatCharacter(codePoint)) {
             if (this.isEditable) {
                 this.insertText(Character.toString(codePoint));
             }
@@ -464,14 +488,62 @@ public class OpenEditBox extends EditBox {
                 this.setFocus(bl);
             }
 
+            if (this.isFocused() && bl) {
+                if (button == 0) {
+                    int i = Mth.floor(mouseX) - this.x;
+                    if (this.bordered) {
+                        i -= 4;
+                    }
+
+                    this.shiftPressed = Screen.hasShiftDown();
+                    String string = FormattedStringDecomposer.plainHeadByWidth(this.font, this.value, this.displayPos, this.getInnerWidth(), Style.EMPTY);
+                    this.moveCursorTo(FormattedStringDecomposer.plainHeadByWidth(this.font, string, 0, i, Style.EMPTY).length() + this.displayPos);
+
+                    long millis = Util.getMillis();
+                    boolean tripleClick = this.doubleClick;
+                    this.doubleClick = millis - this.lastClickTime < 250L && this.lastClickButton == button;
+                    tripleClick &= this.doubleClick;
+                    if (tripleClick) {
+                        this.moveCursorToEnd();
+                        this.setHighlightPos(0);
+                    } else if (this.doubleClick) {
+                        this.shiftPressed = false;
+                        this.moveCursorTo(this.getWordPosition(1, this.getCursorPosition(), false));
+                        this.shiftPressed = true;
+                        this.moveCursorTo(this.getWordPosition(-1, this.getCursorPosition(), false));
+                        this.shiftPressed = Screen.hasShiftDown();
+                    }
+
+                    this.lastClickTime = millis;
+                    this.lastClickButton = button;
+
+                    return true;
+                } else if (button == 1) {
+                    this.setValue("");
+                }
+                return false;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (!this.isVisible()) {
+            return false;
+        } else {
+            boolean bl = mouseX >= (double) this.x && mouseX < (double) (this.x + this.width) && mouseY >= (double) this.y && mouseY < (double) (this.y + this.height);
             if (this.isFocused() && bl && button == 0) {
                 int i = Mth.floor(mouseX) - this.x;
                 if (this.bordered) {
                     i -= 4;
                 }
 
-                String string = FormattedStringHelper.plainHeadByWidth(this.font, this.value, this.displayPos, this.getInnerWidth(), Style.EMPTY);
-                this.moveCursorTo(FormattedStringHelper.plainHeadByWidth(this.font, string, 0, i, Style.EMPTY).length() + this.displayPos);
+                this.shiftPressed = true;
+                String string = FormattedStringDecomposer.plainHeadByWidth(this.font, this.value, this.displayPos, this.getInnerWidth(), Style.EMPTY);
+                this.moveCursorTo(FormattedStringDecomposer.plainHeadByWidth(this.font, string, 0, i, Style.EMPTY).length() + this.displayPos);
+                this.shiftPressed = Screen.hasShiftDown();
                 return true;
             } else {
                 return false;
@@ -499,7 +571,7 @@ public class OpenEditBox extends EditBox {
             int i = this.isEditable ? this.textColor : this.textColorUneditable;
             int j = this.cursorPos - this.displayPos;
             int k = this.highlightPos - this.displayPos;
-            String string = FormattedStringHelper.plainHeadByWidth(this.font, this.value, this.displayPos, this.getInnerWidth(), Style.EMPTY);
+            String string = FormattedStringDecomposer.plainHeadByWidth(this.font, this.value, this.displayPos, this.getInnerWidth(), Style.EMPTY);
             boolean bl = j >= 0 && j <= string.length();
             boolean bl2 = this.isFocused() && this.frame / 6 % 2 == 0 && bl;
             int l = this.bordered ? this.x + 4 : this.x;
@@ -514,11 +586,11 @@ public class OpenEditBox extends EditBox {
                 n = this.font.drawShadow(poseStack, this.formatter.apply(string2, this.displayPos), (float) l, (float) m, i);
             }
 
-            boolean bl3 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
+            boolean bl3 = this.cursorPos < this.value.length() || ComponentDecomposer.getStringLength(this.value) >= this.getMaxLength();
             int o = n;
             if (!bl) {
                 o = j > 0 ? l + this.width : l;
-            } else if (bl3) {
+            } else if (!string.isEmpty()) {
                 o = n - 1;
                 --n;
             }
@@ -531,8 +603,8 @@ public class OpenEditBox extends EditBox {
                 this.font.drawShadow(poseStack, this.suggestion, (float) (o - 1), (float) m, -8355712);
             }
 
-            if (bl2) {
-                if (bl3) {
+            if (bl2 && k == j) {
+                if (!string.isEmpty()) {
                     GuiComponent.fill(poseStack, o, m - 1, o + 1, m + 1 + 9, -3092272);
                 } else {
                     this.font.drawShadow(poseStack, "_", (float) o, (float) m, i);
@@ -540,10 +612,9 @@ public class OpenEditBox extends EditBox {
             }
 
             if (k != j) {
-                int p = l + FormattedStringHelper.stringWidth(this.font, this.value.substring(0, this.highlightPos), this.displayPos);
+                int p = l + FormattedStringDecomposer.stringWidth(this.font, this.value.substring(0, this.highlightPos), this.displayPos);
                 this.renderHighlight(o, m - 1, p - 1, m + 1 + 9);
             }
-
         }
     }
 
@@ -691,29 +762,31 @@ public class OpenEditBox extends EditBox {
      */
     @Override
     public void setHighlightPos(int position) {
-        int i = this.value.length();
-        this.highlightPos = Mth.clamp(position, 0, i);
+        this.highlightPos = Mth.clamp(position, 0, this.value.length());
+    }
+
+    public void setDisplayPosition(int position) {
         if (this.font != null) {
+            int i = this.value.length();
             if (this.displayPos > i) {
                 this.displayPos = i;
             }
 
             int j = this.getInnerWidth();
-            String string = FormattedStringHelper.plainHeadByWidth(this.font, this.value, this.displayPos, j, Style.EMPTY);
+            String string = FormattedStringDecomposer.plainHeadByWidth(this.font, this.value, this.displayPos, j, Style.EMPTY);
             int k = string.length() + this.displayPos;
-            if (this.highlightPos == this.displayPos) {
-                this.displayPos -= FormattedStringHelper.plainTailByWidth(this.font, this.value, j, Style.EMPTY).length();
+            if (position == this.displayPos) {
+                this.displayPos -= FormattedStringDecomposer.plainTailByWidth(this.font, this.value, j, Style.EMPTY).length();
             }
 
-            if (this.highlightPos > k) {
-                this.displayPos += this.highlightPos - k;
-            } else if (this.highlightPos <= this.displayPos) {
-                this.displayPos -= this.displayPos - this.highlightPos;
+            if (position > k) {
+                this.displayPos += position - k;
+            } else if (position <= this.displayPos) {
+                this.displayPos -= this.displayPos - position;
             }
 
             this.displayPos = Mth.clamp(this.displayPos, 0, i);
         }
-
     }
 
     /**
@@ -733,7 +806,7 @@ public class OpenEditBox extends EditBox {
     }
 
     /**
-     * Sets whether or not this textbox is visible
+     * Sets whether this text box is visible
      */
     @Override
     public void setVisible(boolean isVisible) {
@@ -747,7 +820,7 @@ public class OpenEditBox extends EditBox {
 
     @Override
     public int getScreenX(int charNum) {
-        return charNum > this.value.length() ? this.x : this.x + FormattedStringHelper.stringWidth(this.font, this.value.substring(0, charNum), 0);
+        return charNum > this.value.length() ? this.x : this.x + FormattedStringDecomposer.stringWidth(this.font, this.value.substring(0, charNum), 0);
     }
 
     @Override

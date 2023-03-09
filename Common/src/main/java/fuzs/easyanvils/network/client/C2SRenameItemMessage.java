@@ -1,7 +1,8 @@
 package fuzs.easyanvils.network.client;
 
 import fuzs.easyanvils.EasyAnvils;
-import fuzs.easyanvils.util.FormattedStringHelper;
+import fuzs.easyanvils.util.ComponentDecomposer;
+import fuzs.easyanvils.util.FormattedStringDecomposer;
 import fuzs.puzzleslib.network.Message;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
@@ -39,8 +40,8 @@ public class C2SRenameItemMessage implements Message<C2SRenameItemMessage> {
                         EasyAnvils.LOGGER.debug("Player {} interacted with invalid menu {}", player, anvilmenu);
                         return;
                     }
-                    String s = FormattedStringHelper.filterText(message.name);
-                    if (s.length() <= 50) {
+                    String s = FormattedStringDecomposer.filterText(message.name);
+                    if (ComponentDecomposer.getStringLength(s) <= 50) {
                         anvilmenu.setItemName(s);
                     }
                 }

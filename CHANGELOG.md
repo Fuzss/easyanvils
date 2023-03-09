@@ -3,6 +3,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.9-1.19.2] - 2023-03-10
+### Changed
+- Easy Anvils now internally converts formatted item names to Minecraft's component based text format for saving instead of saving raw strings using the legacy chat formatting format
+- This change should help with other mods that see `§` as an invalid character in item names, causing issues
+- Overhauled the anvil rename edit box with a lot of useful text manipulation features, included as an experimental feature to test as a possible future standalone text box enhancement mod
+- Most features are modelled after text handling on macOS, not everything is implemented yet (notably missing right now is double-click+dragging to select individual words)
+  - Left-click the edit box to clear
+  - Double-click a word to select that word
+  - Triple-click anywhere in the box to select everything
+  - Click+drag across text to select all characters dragged above
+  - `Alt`+`Delete` to delete the word left of the cursor
+  - `Ctrl`/`Cmd`+`Delete` to delete all characters left of the cursor
+  - `Alt`+`Left Arrow`/`Right Arrow` to move between words
+  - `Ctrl`/`Cmd`+`Left Arrow`/`Right Arrow` to move to the beginning/end of the text box
+  - `Shift`+`Alt`+`Left Arrow`/`Right Arrow` to select individual words
+  - `Shift`+`Ctrl`/`Cmd`+`Left Arrow`/`Right Arrow` to select everything to the beginning/end of the text box
+### Fixed
+- Fixed a crash when right-clicking anvils on Forge for real this time
+- Fixed a crash when entering Emojis into the anvil rename / name tag edit box
+- Fixed the anvil rename / name tag edit box allowing fewer characters than vanilla when formatting codes are used
+
 ## [v4.0.8-1.19.2] - 2023-03-07
 ### Fixed
 - Fixed a crash when right-clicking anvils on Forge introduced in the last version

@@ -1,6 +1,7 @@
 package fuzs.easyanvils.network.client;
 
-import fuzs.easyanvils.util.FormattedStringHelper;
+import fuzs.easyanvils.util.ComponentDecomposer;
+import fuzs.easyanvils.util.FormattedStringDecomposer;
 import fuzs.puzzleslib.network.Message;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -8,7 +9,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.apache.commons.lang3.StringUtils;
 
 public class C2SNameTagUpdateMessage implements Message<C2SNameTagUpdateMessage> {
     private InteractionHand hand;
@@ -43,14 +43,12 @@ public class C2SNameTagUpdateMessage implements Message<C2SNameTagUpdateMessage>
             public void handle(C2SNameTagUpdateMessage message, Player player, Object gameInstance) {
                 ItemStack stack = player.getItemInHand(message.hand);
                 if (stack.is(Items.NAME_TAG)) {
-                    if (stack.getHoverName().getString().equals(message.title)) return;
-                    if (StringUtils.isBlank(message.title)) {
+                    String s = FormattedStringDecomposer.filterText(message.title);
+                    Component component = ComponentDecomposer.toFormattedComponent(s);
+                    if (component.getString().isEmpty()) {
                         stack.resetHoverName();
-                    } else {
-                        String s = FormattedStringHelper.filterText(message.title);
-                        if (s.length() <= 50) {
-                            stack.setHoverName(Component.literal(s));
-                        }
+                    } else if (component.getString().length() <= 50) {
+                        stack.setHoverName(component);
                     }
                 }
             }

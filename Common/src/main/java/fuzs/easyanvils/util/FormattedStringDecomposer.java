@@ -17,12 +17,12 @@ import java.util.List;
 /**
  * custom string decomposer for iterating formatted strings without removing formatting codes, intended for text fields
  */
-public class FormattedStringHelper {
+public class FormattedStringDecomposer {
 
     public static int stringWidth(Font font, @Nullable String content, int skip) {
         if (content == null) return 0;
         MutableFloat mutableFloat = new MutableFloat();
-        FormattedStringHelper.iterateFormatted(content, Style.EMPTY, (index, style, j) -> {
+        FormattedStringDecomposer.iterateFormatted(content, Style.EMPTY, (index, style, j) -> {
             if (index >= skip) {
                 mutableFloat.add(font.getSplitter().stringWidth(FormattedCharSequence.forward(Character.toString(j), style)));
             }
@@ -196,7 +196,6 @@ public class FormattedStringHelper {
     public static class LengthLimitedCharSink implements FormattedCharSink {
         private final int skip;
         private int maxLength;
-        private int position;
 
         public LengthLimitedCharSink(int maxLength, int skip) {
             this.maxLength = maxLength;
@@ -205,20 +204,12 @@ public class FormattedStringHelper {
 
         @Override
         public boolean accept(int i, Style style, int j) {
-            int charCount = Character.charCount(j);
             if (i >= this.skip) {
-                this.maxLength -= charCount;
-            } else return false;
-            if (this.maxLength >= 0) {
-//                this.position = i + charCount;
-                return true;
+                this.maxLength -= Character.charCount(j);
             } else {
                 return false;
             }
-        }
-
-        public int getPosition() {
-            return this.position;
+            return this.maxLength >= 0;
         }
     }
 }

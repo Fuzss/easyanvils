@@ -21,6 +21,11 @@ public class BuiltInAnvilMenu extends AnvilMenu implements AnvilMenuState {
     }
 
     @Override
+    public final void fillResultSlots() {
+        this.createResult();
+    }
+
+    @Override
     public ItemStack getLeftInput() {
         return this.inputSlots.getItem(0);
     }

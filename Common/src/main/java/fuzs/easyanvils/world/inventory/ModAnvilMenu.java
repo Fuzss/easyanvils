@@ -7,6 +7,7 @@ import fuzs.easyanvils.init.ModRegistry;
 import fuzs.easyanvils.mixin.accessor.AnvilMenuAccessor;
 import fuzs.easyanvils.mixin.accessor.ItemCombinerMenuAccessor;
 import fuzs.easyanvils.mixin.accessor.SlotAccessor;
+import fuzs.easyanvils.util.ComponentDecomposer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -18,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 
@@ -72,8 +72,8 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
         String itemName = ((AnvilMenuAccessor) this).easyanvils$getItemName();
         this.builtInAnvilState.init(left, right, itemName);
         this.vanillaAnvilState.init(left, right, itemName);
-        this.builtInAnvilState.createResult();
-        this.vanillaAnvilState.createResult();
+        this.builtInAnvilState.fillResultSlots();
+        this.vanillaAnvilState.fillResultSlots();
         if (!AnvilMenuState.equals(this.builtInAnvilState, this.vanillaAnvilState)) {
             super.createResult();
         } else {
@@ -208,16 +208,16 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
             }
 
             boolean hasRenamedItem = false;
-            if (StringUtils.isBlank(itemName)) {
+            if (ComponentDecomposer.getStringLength(itemName) == 0) {
                 if (left.hasCustomHoverName()) {
                     renameOperationCost = EasyAnvils.CONFIG.get(ServerConfig.class).freeRenames.filter.test(left) ? 0 : 1;
                     hasRenamedItem = true;
                     output.resetHoverName();
                 }
-            } else if (!itemName.equals(left.getHoverName().getString())) {
+            } else if (!itemName.equals(ComponentDecomposer.toFormattedString(left.getHoverName()))) {
                 renameOperationCost = EasyAnvils.CONFIG.get(ServerConfig.class).freeRenames.filter.test(left) ? 0 : 1;
                 hasRenamedItem = true;
-                output.setHoverName(Component.literal(itemName));
+                output.setHoverName(ComponentDecomposer.toFormattedComponent(itemName));
             }
 
             if (isBook && !ModServices.ABSTRACTIONS.isBookEnchantable(output, right)) {
@@ -289,6 +289,22 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
             }
         }
         this.removeSlotListener(this);
+    }
+
+    @Override
+    public void setItemName(String newName) {
+        ((AnvilMenuAccessor) this).easyanvils$setItemName(newName);
+        if (this.getSlot(2).hasItem()) {
+            ItemStack itemStack = this.getSlot(2).getItem();
+            Component component = ComponentDecomposer.toFormattedComponent(newName);
+            if (component.getString().isEmpty()) {
+                itemStack.resetHoverName();
+            } else {
+                itemStack.setHoverName(component);
+            }
+        }
+
+        this.createResult();
     }
 
     @Override

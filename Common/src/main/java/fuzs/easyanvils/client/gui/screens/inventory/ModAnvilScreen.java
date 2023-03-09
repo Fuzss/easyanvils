@@ -2,9 +2,11 @@ package fuzs.easyanvils.client.gui.screens.inventory;
 
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.client.gui.components.OpenEditBox;
+import fuzs.easyanvils.client.gui.components.TypeActionManager;
 import fuzs.easyanvils.config.ServerConfig;
 import fuzs.easyanvils.mixin.client.accessor.AnvilScreenAccessor;
 import fuzs.easyanvils.network.client.C2SRenameItemMessage;
+import fuzs.easyanvils.util.ComponentDecomposer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
@@ -46,6 +48,15 @@ public class ModAnvilScreen extends AnvilScreen {
         ((AnvilScreenAccessor) this).setName(this.name);
     }
 
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (this.getFocused() == this.name && this.isDragging() && button == 0) {
+            return this.getFocused().mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        }
+
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
     private void onNameChanged(String input) {
         Slot slot = this.menu.getSlot(0);
         if (!slot.hasItem()) return;
@@ -59,16 +70,20 @@ public class ModAnvilScreen extends AnvilScreen {
 
     @Override
     public void resize(Minecraft minecraft, int width, int height) {
+        TypeActionManager typeActionManager = this.name instanceof OpenEditBox openEditBox ? openEditBox.typeActionManager : null;
         boolean visible = this.name.isVisible();
         super.resize(minecraft, width, height);
+        if (typeActionManager != null) ((OpenEditBox) this.name).typeActionManager = typeActionManager;
         this.name.setVisible(visible);
     }
 
     @Override
     public void slotChanged(AbstractContainerMenu containerToSend, int dataSlotIndex, ItemStack stack) {
         if (dataSlotIndex == 0) {
+            this.name.setValue(stack.isEmpty() ? "" : ComponentDecomposer.toFormattedString(stack.getHoverName()));
+            this.name.setEditable(!stack.isEmpty());
+            this.setFocused(this.name);
             this.name.setVisible(!stack.isEmpty());
         }
-        super.slotChanged(containerToSend, dataSlotIndex, stack);
     }
 }
