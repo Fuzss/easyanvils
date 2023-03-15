@@ -3,13 +3,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.10-1.19.2] - 2023-03-15
+### Changed
+- Renaming / repairing no longer accounts for the prior work penalty of an item
+- The 'Too Expensive!' limit is now disabled by default once more
+- Overhauled server config file
+  - Separated all options into three categories
+  - Added a few new options for controlling different costs, like multipliers for enchantment rarities and repairs
+  - Improved many descriptions to hopefully be easier to understand
+### Fixed
+- Fixed an issue where the 'Too Expensive!' label wouldn't show
+
 ## [v4.0.9-1.19.2] - 2023-03-10
 ### Changed
 - Easy Anvils now internally converts formatted item names to Minecraft's component based text format for saving instead of saving raw strings using the legacy chat formatting format
 - This change should help with other mods that see `§` as an invalid character in item names, causing issues
 - Overhauled the anvil rename edit box with a lot of useful text manipulation features, included as an experimental feature to test as a possible future standalone text box enhancement mod
 - Most features are modelled after text handling on macOS, not everything is implemented yet (notably missing right now is double-click+dragging to select individual words)
-  - Left-click the edit box to clear
+  - Right-click the edit box to clear
   - Double-click a word to select that word
   - Triple-click anywhere in the box to select everything
   - Click+drag across text to select all characters dragged above

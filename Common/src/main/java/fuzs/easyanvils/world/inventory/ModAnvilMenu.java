@@ -98,7 +98,7 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
             int repairOperationCost = 0;
             int enchantOperationCost = 0;
             int renameOperationCost = 0;
-            final int maxAnvilRepairCost = EasyAnvils.CONFIG.get(ServerConfig.class).maxAnvilRepairCost;
+            final int maxAnvilRepairCost = EasyAnvils.CONFIG.get(ServerConfig.class).tooExpensiveLimit;
             if (!right.isEmpty()) {
                 isBook = right.getItem() == Items.ENCHANTED_BOOK && !EnchantedBookItem.getEnchantments(right).isEmpty();
                 if (output.isDamageableItem() && output.getItem().isValidRepairItem(left, right)) {
@@ -113,7 +113,7 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                     for (repairMaterials = 0; l2 > 0 && repairMaterials < right.getCount(); ++repairMaterials) {
                         int j3 = output.getDamageValue() - l2;
                         output.setDamageValue(j3);
-                        ++repairOperationCost;
+                        repairOperationCost += EasyAnvils.CONFIG.get(ServerConfig.class).costs.repairWithMaterialUnitCost;
                         l2 = Math.min(output.getDamageValue(), output.getMaxDamage() / 4);
                     }
 
@@ -137,7 +137,7 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
 
                         if (l1 < output.getDamageValue()) {
                             output.setDamageValue(l1);
-                            repairOperationCost += 2;
+                            repairOperationCost += EasyAnvils.CONFIG.get(ServerConfig.class).costs.repairWithOtherItemCost;
                         }
                     }
 
@@ -163,6 +163,8 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                             }
 
                             if (!compatibleWithItem) {
+                                // allow using items with just incompatible enchantments as repair material
+                                if (repairOperationCost > 0) continue;
                                 flag3 = true;
                             } else {
                                 flag2 = true;
@@ -171,29 +173,34 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                                 }
 
                                 // prevent a level higher than max level from being lowered to max value
-                                if (EasyAnvils.CONFIG.get(ServerConfig.class).noAnvilMaxLevelLimit) {
-                                    int maxLevel = Math.max(map.getOrDefault(enchantment1, 0), map1.get(enchantment1));
-                                    maxLevel = Math.max(maxLevel, enchantmentLevel);
-                                    if (maxLevel != enchantmentLevel) {
-                                        enchantmentLevel = maxLevel;
-                                    }
+                                int maxLevel = Math.max(map.getOrDefault(enchantment1, 0), map1.get(enchantment1));
+                                maxLevel = Math.max(maxLevel, enchantmentLevel);
+                                if (maxLevel != enchantmentLevel) {
+                                    enchantmentLevel = maxLevel;
                                 }
 
-                                map.put(enchantment1, enchantmentLevel);
                                 int rarityCostMultiplier = switch (enchantment1.getRarity()) {
-                                    case COMMON -> 1;
-                                    case UNCOMMON -> 2;
-                                    case RARE -> 4;
-                                    case VERY_RARE -> 8;
+                                    case COMMON -> EasyAnvils.CONFIG.get(ServerConfig.class).costs.commonEnchantmentMultiplier;
+                                    case UNCOMMON -> EasyAnvils.CONFIG.get(ServerConfig.class).costs.uncommonEnchantmentMultiplier;
+                                    case RARE -> EasyAnvils.CONFIG.get(ServerConfig.class).costs.rareEnchantmentMultiplier;
+                                    case VERY_RARE -> EasyAnvils.CONFIG.get(ServerConfig.class).costs.veryRareEnchantmentMultiplier;
                                 };
 
-                                if (isBook) {
+                                if (isBook && EasyAnvils.CONFIG.get(ServerConfig.class).costs.halvedBookCosts) {
                                     rarityCostMultiplier = Math.max(1, rarityCostMultiplier / 2);
                                 }
 
-                                enchantOperationCost += rarityCostMultiplier * enchantmentLevel;
-                                if (left.getCount() > 1) {
-                                    enchantOperationCost = maxAnvilRepairCost;
+                                // don't increase repair cost when an enchantment is already present and the level does not change (already at max level probably)
+                                Integer oldEnchantmentLevel = map.put(enchantment1, enchantmentLevel);
+                                if (oldEnchantmentLevel == null || oldEnchantmentLevel != enchantmentLevel) {
+                                    enchantOperationCost += rarityCostMultiplier * enchantmentLevel;
+                                }
+
+                                // different implementation for showing 'Too Expensive!' client-side from vanilla
+                                if (left.getCount() > 1 && !this.player.getAbilities().instabuild) {
+                                    this.resultSlots.setItem(0, ItemStack.EMPTY);
+                                    this.setCost(-1);
+                                    return;
                                 }
                             }
                         }
@@ -231,16 +238,23 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                 if (!hasRenamedItem) {
                     output = ItemStack.EMPTY;
                 }
+            } else if (enchantOperationCost == 0 && EasyAnvils.CONFIG.get(ServerConfig.class).renameAndRepairCosts == ServerConfig.RenameAndRepairCost.FIXED) {
+                this.setCost(allOperationsCost);
             } else {
                 this.setCost(baseRepairCost + allOperationsCost);
             }
 
-            if (enchantOperationCost == 0 && this.getCost() >= maxAnvilRepairCost && EasyAnvils.CONFIG.get(ServerConfig.class).alwaysRenameAndRepair) {
-                this.setCost(maxAnvilRepairCost - 1);
+            if (enchantOperationCost == 0 && this.getCost() >= maxAnvilRepairCost && EasyAnvils.CONFIG.get(ServerConfig.class).renameAndRepairCosts == ServerConfig.RenameAndRepairCost.LIMITED) {
+                // we have removed the max repair limit, so just use the vanilla limit here
+                if (maxAnvilRepairCost == -1) {
+                    this.setCost(39);
+                } else {
+                    this.setCost(maxAnvilRepairCost - 1);
+                }
             }
 
             // allow for custom max enchantment levels limit
-            if (this.getCost() >= maxAnvilRepairCost && !this.player.getAbilities().instabuild) {
+            if (this.getCost() >= maxAnvilRepairCost && maxAnvilRepairCost != -1 && !this.player.getAbilities().instabuild) {
                 output = ItemStack.EMPTY;
             }
 
@@ -250,7 +264,7 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                     outputRepairCost = right.getBaseRepairCost();
                 }
 
-                if (enchantOperationCost > 0 || !EasyAnvils.CONFIG.get(ServerConfig.class).alwaysRenameAndRepair) {
+                if (allOperationsCost > 0 && (enchantOperationCost > 0 || !EasyAnvils.CONFIG.get(ServerConfig.class).penaltyFreeRenamesAndRepairs)) {
                     outputRepairCost = AnvilMenu.calculateIncreasedRepairCost(outputRepairCost);
                 }
 

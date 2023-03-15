@@ -1,4 +1,4 @@
-package fuzs.easyanvils.integration;
+package fuzs.easyanvils.integration.apotheosis;
 
 import fuzs.easyanvils.init.ModRegistry;
 import fuzs.easyanvils.world.inventory.ModAnvilMenu;

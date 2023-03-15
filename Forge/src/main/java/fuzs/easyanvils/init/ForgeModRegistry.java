@@ -1,7 +1,7 @@
 package fuzs.easyanvils.init;
 
 import fuzs.easyanvils.EasyAnvils;
-import fuzs.easyanvils.integration.ApothAnvilBlockEntity;
+import fuzs.easyanvils.integration.apotheosis.ApothAnvilBlockEntity;
 import fuzs.easyanvils.world.level.block.entity.ForgeAnvilBlockEntity;
 import fuzs.puzzleslib.core.CommonFactories;
 import fuzs.puzzleslib.core.ModLoaderEnvironment;

@@ -1,6 +1,6 @@
 package fuzs.easyanvils.mixin.integration.apotheosis;
 
-import fuzs.easyanvils.integration.ApothAnvilBlockEntity;
+import fuzs.easyanvils.integration.apotheosis.ApothAnvilBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
