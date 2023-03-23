@@ -2,6 +2,7 @@ package fuzs.easyanvils.world.level.block.entity;
 
 import fuzs.easyanvils.init.ModRegistry;
 import fuzs.easyanvils.world.inventory.ModAnvilMenu;
+import fuzs.puzzleslib.api.container.v1.ContainerImpl;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -17,8 +18,7 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class AnvilBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ContainerImpl {
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(2, ItemStack.EMPTY);

@@ -1,11 +1,8 @@
 package fuzs.easyanvils.client;
 
 import fuzs.easyanvils.EasyAnvils;
-import fuzs.easyanvils.client.handler.NameTagTooltipHandler;
-import fuzs.puzzleslib.client.core.ClientFactories;
+import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
@@ -15,13 +12,6 @@ public class EasyAnvilsForgeClient {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
-        ClientFactories.INSTANCE.clientModConstructor(EasyAnvils.MOD_ID).accept(new EasyAnvilsClient());
-        registerHandlers();
-    }
-
-    private static void registerHandlers() {
-        MinecraftForge.EVENT_BUS.addListener((final ItemTooltipEvent evt) -> {
-            NameTagTooltipHandler.onItemTooltip(evt.getItemStack(), evt.getFlags(), evt.getToolTip());
-        });
+        ClientModConstructor.construct(EasyAnvils.MOD_ID, EasyAnvilsClient::new);
     }
 }

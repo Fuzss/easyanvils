@@ -1,6 +1,6 @@
 package fuzs.easyanvils.network;
 
-import fuzs.puzzleslib.network.Message;
+import fuzs.puzzleslib.api.network.v2.MessageV2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class S2CAnvilRepairMessage implements Message<S2CAnvilRepairMessage> {
+public class S2CAnvilRepairMessage implements MessageV2<S2CAnvilRepairMessage> {
     private BlockPos pos;
     private int stateId;
 

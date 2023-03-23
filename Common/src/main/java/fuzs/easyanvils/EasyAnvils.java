@@ -8,11 +8,13 @@ import fuzs.easyanvils.network.S2CAnvilRepairMessage;
 import fuzs.easyanvils.network.S2COpenNameTagEditorMessage;
 import fuzs.easyanvils.network.client.C2SNameTagUpdateMessage;
 import fuzs.easyanvils.network.client.C2SRenameItemMessage;
-import fuzs.puzzleslib.config.ConfigHolder;
-import fuzs.puzzleslib.core.CommonFactories;
-import fuzs.puzzleslib.core.ModConstructor;
-import fuzs.puzzleslib.network.MessageDirection;
-import fuzs.puzzleslib.network.NetworkHandler;
+import fuzs.puzzleslib.api.config.v3.ConfigHolder;
+import fuzs.puzzleslib.api.core.v1.ModConstructor;
+import fuzs.puzzleslib.api.core.v1.context.ModLifecycleContext;
+import fuzs.puzzleslib.api.event.v1.entity.player.AnvilRepairCallback;
+import fuzs.puzzleslib.api.event.v1.entity.player.PlayerInteractEvents;
+import fuzs.puzzleslib.api.network.v2.MessageDirection;
+import fuzs.puzzleslib.api.network.v2.NetworkHandlerV2;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
@@ -31,43 +33,20 @@ public class EasyAnvils implements ModConstructor {
     public static final String MOD_NAME = "Easy Anvils";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
-    public static final NetworkHandler NETWORK = CommonFactories.INSTANCE.network(MOD_ID);
-    @SuppressWarnings("Convert2MethodRef")
-    public static final ConfigHolder CONFIG = CommonFactories.INSTANCE
-            .clientConfig(ClientConfig.class, () -> new ClientConfig())
-            .serverConfig(ServerConfig.class, () -> new ServerConfig());
+    public static final NetworkHandlerV2 NETWORK = NetworkHandlerV2.build(MOD_ID);
+    public static final ConfigHolder CONFIG = ConfigHolder.builder(MOD_ID).client(ClientConfig.class).server(ServerConfig.class);
 
     @Override
     public void onConstructMod() {
-        CONFIG.bakeConfigs(MOD_ID);
         ModRegistry.touch();
         registerMessages();
+        registerHandlers();
     }
 
-    @Override
-    public void onCommonSetup() {
-        DispenserBlock.registerBehavior(Items.IRON_BLOCK, new OptionalDispenseItemBehavior() {
-
-            @Override
-            public ItemStack execute(BlockSource source, ItemStack stack) {
-                if (!EasyAnvils.CONFIG.get(ServerConfig.class).anvilRepairing) return super.execute(source, stack);
-                Direction direction = source.getBlockState().getValue(DispenserBlock.FACING);
-                BlockPos pos = source.getPos().relative(direction);
-                Level level = source.getLevel();
-                BlockState state = level.getBlockState(pos);
-                this.setSuccess(true);
-                if (state.is(BlockTags.ANVIL)) {
-                    if (ItemInteractionHandler.tryRepairAnvil(level, pos, state)) {
-                        stack.shrink(1);
-                    } else {
-                        this.setSuccess(false);
-                    }
-                    return stack;
-                } else {
-                    return super.execute(source, stack);
-                }
-            }
-        });
+    private static void registerHandlers() {
+        PlayerInteractEvents.USE_ITEM.register(ItemInteractionHandler::onUseItem);
+        PlayerInteractEvents.USE_BLOCK.register(ItemInteractionHandler::onUseBlock);
+        AnvilRepairCallback.EVENT.register(ItemInteractionHandler::onAnvilRepair);
     }
 
     private static void registerMessages() {
@@ -75,5 +54,33 @@ public class EasyAnvils implements ModConstructor {
         NETWORK.register(C2SNameTagUpdateMessage.class, C2SNameTagUpdateMessage::new, MessageDirection.TO_SERVER);
         NETWORK.register(S2CAnvilRepairMessage.class, S2CAnvilRepairMessage::new, MessageDirection.TO_CLIENT);
         NETWORK.register(C2SRenameItemMessage.class, C2SRenameItemMessage::new, MessageDirection.TO_SERVER);
+    }
+
+    @Override
+    public void onCommonSetup(ModLifecycleContext context) {
+        context.enqueueWork(() -> {
+            DispenserBlock.registerBehavior(Items.IRON_BLOCK, new OptionalDispenseItemBehavior() {
+
+                @Override
+                public ItemStack execute(BlockSource source, ItemStack stack) {
+                    if (!EasyAnvils.CONFIG.get(ServerConfig.class).anvilRepairing) return super.execute(source, stack);
+                    Direction direction = source.getBlockState().getValue(DispenserBlock.FACING);
+                    BlockPos pos = source.getPos().relative(direction);
+                    Level level = source.getLevel();
+                    BlockState state = level.getBlockState(pos);
+                    this.setSuccess(true);
+                    if (state.is(BlockTags.ANVIL)) {
+                        if (ItemInteractionHandler.tryRepairAnvil(level, pos, state)) {
+                            stack.shrink(1);
+                        } else {
+                            this.setSuccess(false);
+                        }
+                        return stack;
+                    } else {
+                        return super.execute(source, stack);
+                    }
+                }
+            });
+        });
     }
 }

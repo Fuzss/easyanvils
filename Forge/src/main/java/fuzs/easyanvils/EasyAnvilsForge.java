@@ -1,19 +1,18 @@
 package fuzs.easyanvils;
 
 import fuzs.easyanvils.data.ModLanguageProvider;
-import fuzs.easyanvils.handler.ItemInteractionHandler;
 import fuzs.easyanvils.init.ForgeModRegistry;
-import fuzs.puzzleslib.core.CommonFactories;
-import fuzs.puzzleslib.core.CoreServices;
+import fuzs.puzzleslib.api.core.v1.ModConstructor;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.data.PackOutput;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.event.entity.player.AnvilRepairEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
+
+import java.util.concurrent.CompletableFuture;
 
 @Mod(EasyAnvils.MOD_ID)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -21,34 +20,16 @@ public class EasyAnvilsForge {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
-        CommonFactories.INSTANCE.modConstructor(EasyAnvils.MOD_ID).accept(new EasyAnvils());
+        ModConstructor.construct(EasyAnvils.MOD_ID, EasyAnvils::new);
         ForgeModRegistry.touch();
-        registerHandlers();
-    }
-
-    private static void registerHandlers() {
-        MinecraftForge.EVENT_BUS.addListener((final PlayerInteractEvent.RightClickItem evt) -> {
-            ItemInteractionHandler.onRightClickItem(evt.getLevel(), evt.getEntity(), evt.getHand()).ifPresent(result -> {
-                evt.setCancellationResult(result.getResult());
-                evt.setCanceled(true);
-            });
-        });
-        MinecraftForge.EVENT_BUS.addListener((final PlayerInteractEvent.RightClickBlock evt) -> {
-            ItemInteractionHandler.onRightClickBlock(evt.getLevel(), evt.getEntity(), evt.getHand(), evt.getHitVec()).ifPresent(result -> {
-                evt.setCancellationResult(result);
-                evt.setCanceled(true);
-            });
-        });
-        MinecraftForge.EVENT_BUS.addListener((final AnvilRepairEvent evt) -> {
-            ItemInteractionHandler.onAnvilRepair(evt.getEntity(), evt.getLeft(), evt.getRight(), evt.getOutput(), evt.getBreakChance())
-                    .ifPresent(breakChance -> evt.setBreakChance((float) breakChance));
-        });
     }
 
     @SubscribeEvent
     public static void onGatherData(final GatherDataEvent evt) {
-        DataGenerator generator = evt.getGenerator();
-        final ExistingFileHelper existingFileHelper = evt.getExistingFileHelper();
-        generator.addProvider(true, new ModLanguageProvider(generator, EasyAnvils.MOD_ID));
+        final DataGenerator dataGenerator = evt.getGenerator();
+        final PackOutput packOutput = dataGenerator.getPackOutput();
+        final CompletableFuture<HolderLookup.Provider> lookupProvider = evt.getLookupProvider();
+        final ExistingFileHelper fileHelper = evt.getExistingFileHelper();
+        dataGenerator.addProvider(true, new ModLanguageProvider(packOutput, EasyAnvils.MOD_ID));
     }
 }

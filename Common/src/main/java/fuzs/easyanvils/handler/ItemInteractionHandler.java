@@ -4,6 +4,8 @@ import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.config.ServerConfig;
 import fuzs.easyanvils.network.S2CAnvilRepairMessage;
 import fuzs.easyanvils.network.S2COpenNameTagEditorMessage;
+import fuzs.puzzleslib.api.event.v1.core.EventResultHolder;
+import fuzs.puzzleslib.api.event.v1.data.MutableFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -20,25 +22,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-import java.util.OptionalDouble;
-
 public class ItemInteractionHandler {
 
-    public static Optional<InteractionResultHolder<ItemStack>> onRightClickItem(Level level, Player player, InteractionHand hand) {
-        if (!EasyAnvils.CONFIG.get(ServerConfig.class).editNameTagsNoAnvil) return Optional.empty();
+    public static EventResultHolder<InteractionResultHolder<ItemStack>> onUseItem(Player player, Level level, InteractionHand hand) {
+        if (!EasyAnvils.CONFIG.get(ServerConfig.class).editNameTagsNoAnvil) return EventResultHolder.pass();
         ItemStack stack = player.getItemInHand(hand);
         if (player.isShiftKeyDown() && stack.is(Items.NAME_TAG)) {
             if (!level.isClientSide) {
-                EasyAnvils.NETWORK.sendTo(new S2COpenNameTagEditorMessage(hand, stack.getHoverName().getString()), (ServerPlayer) player);
+                EasyAnvils.NETWORK.sendTo(new S2COpenNameTagEditorMessage(hand, stack.getHoverName()), (ServerPlayer) player);
             }
-            return Optional.of(InteractionResultHolder.sidedSuccess(stack, level.isClientSide));
+            return EventResultHolder.interrupt(InteractionResultHolder.sidedSuccess(stack, level.isClientSide));
         }
-        return Optional.empty();
+        return EventResultHolder.pass();
     }
 
-    public static Optional<InteractionResult> onRightClickBlock(Level level, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (!EasyAnvils.CONFIG.get(ServerConfig.class).anvilRepairing) return Optional.empty();
+    public static EventResultHolder<InteractionResult> onUseBlock(Player player, Level level, InteractionHand hand, BlockHitResult hitResult) {
+        if (!EasyAnvils.CONFIG.get(ServerConfig.class).anvilRepairing) return EventResultHolder.pass();
         ItemStack stack = player.getItemInHand(hand);
         if (stack.is(Items.IRON_BLOCK)) {
             BlockPos pos = hitResult.getBlockPos();
@@ -47,10 +46,10 @@ public class ItemInteractionHandler {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                 }
-                return Optional.of(InteractionResult.sidedSuccess(level.isClientSide));
+                return EventResultHolder.interrupt(InteractionResult.sidedSuccess(level.isClientSide));
             }
         }
-        return Optional.empty();
+        return EventResultHolder.pass();
     }
 
     public static boolean tryRepairAnvil(Level level, BlockPos pos, BlockState state) {
@@ -74,8 +73,11 @@ public class ItemInteractionHandler {
         }
     }
 
-    public static OptionalDouble onAnvilRepair(Player player, ItemStack left, ItemStack right, ItemStack output, double breakChance) {
-        if (EasyAnvils.CONFIG.get(ServerConfig.class).riskFreeAnvilRenaming && right.isEmpty()) return OptionalDouble.of(0.0);
-        return OptionalDouble.of(EasyAnvils.CONFIG.get(ServerConfig.class).anvilBreakChance);
+    public static void onAnvilRepair(Player player, ItemStack left, ItemStack right, ItemStack output, MutableFloat breakChance) {
+        if (EasyAnvils.CONFIG.get(ServerConfig.class).riskFreeAnvilRenaming && right.isEmpty()) {
+            breakChance.accept(0.0F);
+        } else {
+            breakChance.accept((float) EasyAnvils.CONFIG.get(ServerConfig.class).anvilBreakChance);
+        }
     }
 }

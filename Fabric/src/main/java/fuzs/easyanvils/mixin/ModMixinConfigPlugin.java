@@ -1,7 +1,6 @@
 package fuzs.easyanvils.mixin;
 
-import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
-import net.minecraftforge.fml.loading.FMLLoader;
+import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -23,14 +22,7 @@ public class ModMixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (FMLLoader.getLoadingModList().getModFileById("puzzleslib") == null) {
-            return false;
-        }
-        if (mixinClassName.contains(".mixin.integration.apotheosis.")) {
-            return ModLoaderEnvironment.INSTANCE.isModLoadedSafe("apotheosis");
-        } else {
-            return true;
-        }
+        return FabricLoader.getInstance().isModLoaded("puzzleslib");
     }
 
     @Override

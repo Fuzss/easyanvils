@@ -2,15 +2,15 @@ package fuzs.easyanvils.network.client;
 
 import fuzs.easyanvils.util.ComponentDecomposer;
 import fuzs.easyanvils.util.FormattedStringDecomposer;
-import fuzs.puzzleslib.network.Message;
+import fuzs.easyanvils.world.inventory.ModAnvilMenu;
+import fuzs.puzzleslib.api.network.v2.MessageV2;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-public class C2SNameTagUpdateMessage implements Message<C2SNameTagUpdateMessage> {
+public class C2SNameTagUpdateMessage implements MessageV2<C2SNameTagUpdateMessage> {
     private InteractionHand hand;
     private String title;
 
@@ -44,11 +44,8 @@ public class C2SNameTagUpdateMessage implements Message<C2SNameTagUpdateMessage>
                 ItemStack stack = player.getItemInHand(message.hand);
                 if (stack.is(Items.NAME_TAG)) {
                     String s = FormattedStringDecomposer.filterText(message.title);
-                    Component component = ComponentDecomposer.toFormattedComponent(s);
-                    if (component.getString().isEmpty()) {
-                        stack.resetHoverName();
-                    } else if (component.getString().length() <= 50) {
-                        stack.setHoverName(component);
+                    if (ComponentDecomposer.getStringLength(s) <= 50) {
+                        ModAnvilMenu.setFormattedItemName(s, stack);
                     }
                 }
             }

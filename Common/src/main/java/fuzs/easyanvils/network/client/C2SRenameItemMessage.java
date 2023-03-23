@@ -3,12 +3,12 @@ package fuzs.easyanvils.network.client;
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.util.ComponentDecomposer;
 import fuzs.easyanvils.util.FormattedStringDecomposer;
-import fuzs.puzzleslib.network.Message;
+import fuzs.puzzleslib.api.network.v2.MessageV2;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AnvilMenu;
 
-public class C2SRenameItemMessage implements Message<C2SRenameItemMessage> {
+public class C2SRenameItemMessage implements MessageV2<C2SRenameItemMessage> {
     private String name;
 
     public C2SRenameItemMessage() {

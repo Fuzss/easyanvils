@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.12-SNAPSHOT'
+    id 'fabric-loom' version '1.0.+'
     id 'io.github.juuxel.loom-quiltflower' version '1.7.1'
     // this depends on an older version of guava, which loom is incompatible with, so make sure to apply this plugin after loom
     // haven't found a proper way to manage plugin dependencies otherwise
@@ -11,27 +11,6 @@ plugins {
 archivesBaseName = rootProject.name
 version = "v${modVersion}-${minecraftVersion}-Fabric"
 group = modMavenGroup
-
-loom {
-    mixin.defaultRefmapName = "${modId}.refmap.json"
-
-    runs {
-        client {
-            client()
-            setConfigName("Fabric Client")
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
-        }
-        server {
-            server()
-            setConfigName("Fabric Server")
-            ideConfigGenerated(true)
-            runDir("../run")
-            vmArgs  '-Xms1G', '-Xmx4G', '-Dmixin.debug.export=true'
-        }
-    }
-}
 
 repositories {
     maven {
@@ -50,40 +29,56 @@ repositories {
         name = "jamieswhiteshirt"
         url = "https://maven.jamieswhiteshirt.com/libs-release/"
     }
-    maven {
-        name = 'wispforest'
-        url = 'https://maven.wispforest.io'
-    }
 }
 
 dependencies {
-    // Include Common Project
-    compileOnly project(":Common")
+    // Common Project
+    compileOnly(project(path: ":Common", configuration: "namedElements")) {
+        transitive = false
+    }
 
     // Minecraft
     minecraft "com.mojang:minecraft:${minecraftVersion}"
     mappings loom.layered() {
         officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${minecraftVersion}:${parchmentMappingsVersion}@zip")
+        parchment("org.parchmentmc.data:parchment-${parchmentMinecraftVersion}:${parchmentMappingsVersion}@zip")
     }
 
     // Fabric
-    modImplementation "net.fabricmc:fabric-loader:${fabricVersion}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
+    modApi "net.fabricmc:fabric-loader:${fabricVersion}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
 
     // Quality of Life Mods
-    modRuntimeOnly "com.terraformersmc:modmenu:4.0.6"
-    modRuntimeOnly "curse.maven:tooltipfix-411557:3820437"
+    modLocalRuntime "com.terraformersmc:modmenu:5.0.2"
+    modLocalRuntime "curse.maven:configured-fabric-667378:4441611"
 
     // Puzzles Lib
-    modImplementation "fuzs.puzzleslib:puzzleslib-fabric:${puzzlesVersion}"
+    modApi "fuzs.puzzleslib:puzzleslib-fabric:${puzzlesVersion}"
+}
+
+loom {
+    mixin.defaultRefmapName = "${modId}.refmap.json"
+
+    runs {
+        client {
+            client()
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            runDir("../run")
+            vmArg '-Dmixin.debug.export=true'
+        }
+        server {
+            server()
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            runDir("../run")
+            vmArg '-Dmixin.debug.export=true'
+        }
+    }
 }
 
 processResources {
-    from(project(":Common").sourceSets.main.resources) {
-        // we need to have this in common so that in a non-production environment the common jar is correctly deobfuscated
-        exclude("quilt.mod.json")
-    }
+    from(project(":Common").sourceSets.main.resources)
     from(project(":Forge").file('src/generated/resources')) {
         exclude('.cache/')
     }
@@ -106,15 +101,14 @@ processResources {
     inputs.property "modAuthor", 				"${modAuthor}"
     inputs.property "minFabricVersion", 		"${minFabricVersion}"
     inputs.property "minFabricApiVersion", 		"${minFabricApiVersion}"
-    inputs.property "minMinecraftVersion", 		"${minMinecraftVersion}"
-    inputs.property "nextMinecraftVersion", 	rootProject.getNextVersion("${minMinecraftVersion}")
+    inputs.property "minecraftVersion", 		"${minecraftVersion}"
 	inputs.property "minPuzzlesVersion", 		"${minPuzzlesVersion}"
     inputs.property "packFormat", 				"${packFormat}"
 	inputs.property "mainEntryPoint", 			"${project.group}.${rootProject.name}Fabric"
 	inputs.property "clientEntryPoint", 		"${project.group}.client.${rootProject.name}FabricClient"
     inputs.property "modFabricEnvironment", 	"${modFabricEnvironment}"
 
-    // replace stuff in fabric.mod.json and pack.mcmeta
+    // replace stuff in fabric.mod.json
     filesMatching ('fabric.mod.json') {
         expand (
                 'modId':                	"${modId}",
@@ -127,8 +121,7 @@ processResources {
                 'modAuthor':            	"${modAuthor}",
                 'minFabricVersion':     	"${minFabricVersion}",
                 'minFabricApiVersion':  	"${minFabricApiVersion}",
-                'minMinecraftVersion':  	"${minMinecraftVersion}",
-                "nextMinecraftVersion": 	rootProject.getNextVersion("${minMinecraftVersion}"),
+                'minecraftVersion':  	    "${minecraftVersion}",
 				"minPuzzlesVersion":    	"${minPuzzlesVersion}",
 				"mainEntryPoint": 			"${project.group}.${rootProject.name}Fabric",
 				"clientEntryPoint": 		"${project.group}.client.${rootProject.name}FabricClient",
@@ -136,6 +129,7 @@ processResources {
         )
     }
 
+    // replace stuff in pack.mcmeta
     filesMatching ('pack.mcmeta') {
         expand (
                 'modDescription':       "${modDescription}",
@@ -185,18 +179,6 @@ publishing {
                     developer {
                         id = "${modAuthor}".toLowerCase()
                         name = "${modAuthor}"
-                    }
-                }
-            }
-            afterEvaluate {
-                // exclude certain dependencies when publishing to maven
-                // from https://stackoverflow.com/a/50121790
-                pom.withXml {
-                    asNode().dependencies.dependency.each { dep ->
-                        // use this approach to make excluding dependencies from Curse Maven more convenient
-                        if (["curse.maven:", "com.terraformersmc:modmenu"].stream().anyMatch(mod -> "${dep.groupId.last().value().last()}:${dep.artifactId.last().value().last()}".startsWith(mod))) {
-                            assert dep.parent().remove(dep)
-                        }
                     }
                 }
             }

@@ -1,21 +1,22 @@
 package fuzs.easyanvils.network;
 
 import fuzs.easyanvils.client.gui.screens.inventory.NameTagEditScreen;
-import fuzs.puzzleslib.network.Message;
+import fuzs.puzzleslib.api.network.v2.MessageV2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 
-public class S2COpenNameTagEditorMessage implements Message<S2COpenNameTagEditorMessage> {
+public class S2COpenNameTagEditorMessage implements MessageV2<S2COpenNameTagEditorMessage> {
     private InteractionHand hand;
-    private String title;
+    private Component title;
 
     public S2COpenNameTagEditorMessage() {
 
     }
 
-    public S2COpenNameTagEditorMessage(InteractionHand hand, String title) {
+    public S2COpenNameTagEditorMessage(InteractionHand hand, Component title) {
         this.hand = hand;
         this.title = title;
     }
@@ -23,13 +24,13 @@ public class S2COpenNameTagEditorMessage implements Message<S2COpenNameTagEditor
     @Override
     public void write(FriendlyByteBuf buf) {
         buf.writeEnum(this.hand);
-        buf.writeUtf(this.title);
+        buf.writeComponent(this.title);
     }
 
     @Override
     public void read(FriendlyByteBuf buf) {
         this.hand = buf.readEnum(InteractionHand.class);
-        this.title = buf.readUtf();
+        this.title = buf.readComponent();
     }
 
     @Override

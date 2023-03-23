@@ -30,7 +30,6 @@ public class ModAnvilScreen extends AnvilScreen {
 
     @Override
     protected void subInit() {
-        this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
         if (EasyAnvils.CONFIG.get(ServerConfig.class).renamingSupportsFormatting) {

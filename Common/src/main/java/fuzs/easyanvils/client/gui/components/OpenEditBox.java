@@ -483,14 +483,14 @@ public class OpenEditBox extends EditBox {
         if (!this.isVisible()) {
             return false;
         } else {
-            boolean bl = mouseX >= (double) this.x && mouseX < (double) (this.x + this.width) && mouseY >= (double) this.y && mouseY < (double) (this.y + this.height);
+            boolean bl = mouseX >= (double) this.getX() && mouseX < (double) (this.getX() + this.width) && mouseY >= (double) this.getY() && mouseY < (double) (this.getY() + this.height);
             if (this.canLoseFocus) {
                 this.setFocus(bl);
             }
 
             if (this.isFocused() && bl) {
                 if (button == 0) {
-                    int i = Mth.floor(mouseX) - this.x;
+                    int i = Mth.floor(mouseX) - this.getX();
                     if (this.bordered) {
                         i -= 4;
                     }
@@ -533,9 +533,9 @@ public class OpenEditBox extends EditBox {
         if (!this.isVisible()) {
             return false;
         } else {
-            boolean bl = mouseX >= (double) this.x && mouseX < (double) (this.x + this.width) && mouseY >= (double) this.y && mouseY < (double) (this.y + this.height);
+            boolean bl = mouseX >= (double) this.getX() && mouseX < (double) (this.getX() + this.width) && mouseY >= (double) this.getY() && mouseY < (double) (this.getY() + this.height);
             if (this.isFocused() && bl && button == 0) {
-                int i = Mth.floor(mouseX) - this.x;
+                int i = Mth.floor(mouseX) - this.getX();
                 if (this.bordered) {
                     i -= 4;
                 }
@@ -564,8 +564,8 @@ public class OpenEditBox extends EditBox {
         if (this.isVisible()) {
             if (this.isBordered()) {
                 int i = this.isFocused() ? -1 : -6250336;
-                fill(poseStack, this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, i);
-                fill(poseStack, this.x, this.y, this.x + this.width, this.y + this.height, -16777216);
+                fill(poseStack, this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, i);
+                fill(poseStack, this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, -16777216);
             }
 
             int i = this.isEditable ? this.textColor : this.textColorUneditable;
@@ -574,8 +574,8 @@ public class OpenEditBox extends EditBox {
             String string = FormattedStringDecomposer.plainHeadByWidth(this.font, this.value, this.displayPos, this.getInnerWidth(), Style.EMPTY);
             boolean bl = j >= 0 && j <= string.length();
             boolean bl2 = this.isFocused() && this.frame / 6 % 2 == 0 && bl;
-            int l = this.bordered ? this.x + 4 : this.x;
-            int m = this.bordered ? this.y + (this.height - 8) / 2 : this.y;
+            int l = this.bordered ? this.getX() + 4 : this.getX();
+            int m = this.bordered ? this.getY() + (this.height - 8) / 2 : this.getY();
             int n = l;
             if (k > string.length()) {
                 k = string.length();
@@ -634,12 +634,12 @@ public class OpenEditBox extends EditBox {
             endY = i;
         }
 
-        if (endX > this.x + this.width) {
-            endX = this.x + this.width;
+        if (endX > this.getX() + this.width) {
+            endX = this.getX() + this.width;
         }
 
-        if (startX > this.x + this.width) {
-            startX = this.x + this.width;
+        if (startX > this.getX() + this.width) {
+            startX = this.getX() + this.width;
         }
 
         Tesselator tesselator = Tesselator.getInstance();
@@ -726,7 +726,7 @@ public class OpenEditBox extends EditBox {
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return this.visible && mouseX >= (double) this.x && mouseX < (double) (this.x + this.width) && mouseY >= (double) this.y && mouseY < (double) (this.y + this.height);
+        return this.visible && mouseX >= (double) this.getX() && mouseX < (double) (this.getX() + this.width) && mouseY >= (double) this.getY() && mouseY < (double) (this.getY() + this.height);
     }
 
     @Override
@@ -820,16 +820,10 @@ public class OpenEditBox extends EditBox {
 
     @Override
     public int getScreenX(int charNum) {
-        return charNum > this.value.length() ? this.x : this.x + FormattedStringDecomposer.stringWidth(this.font, this.value.substring(0, charNum), 0);
+        return charNum > this.value.length() ? this.getX() : this.getX() + FormattedStringDecomposer.stringWidth(this.font, this.value.substring(0, charNum), 0);
     }
 
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {
-        narrationElementOutput.add(NarratedElementType.TITLE, Component.translatable("narration.edit_box", this.getValue()));
+    public void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+        narrationElementOutput.add(NarratedElementType.TITLE, this.createNarrationMessage());
     }
 }

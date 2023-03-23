@@ -2,8 +2,8 @@ package fuzs.easyanvils.config;
 
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.world.inventory.ModAnvilMenu;
-import fuzs.puzzleslib.config.ConfigCore;
-import fuzs.puzzleslib.config.annotation.Config;
+import fuzs.puzzleslib.api.config.v3.Config;
+import fuzs.puzzleslib.api.config.v3.ConfigCore;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 

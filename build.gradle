@@ -66,7 +66,8 @@ subprojects {
     }
 
     tasks.withType(Jar).configureEach {
-        from rootProject.file("LICENSE")
+        from rootProject.file("LICENSE.md")
+        from rootProject.file("LICENSE-ASSETS.md")
         from rootProject.file("CHANGELOG.md")
         manifest {
             attributes([
@@ -94,7 +95,6 @@ subprojects {
     }
 }
 
-import groovy.json.*
 import java.util.regex.Pattern
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
@@ -112,11 +112,4 @@ task incrementBuildNumber {
         def propertiesContent = buildNumberMatcher.replaceAll("uniqueBuildNumber=" + ++versionCode)
         propertiesFile.write(propertiesContent)
     }
-}
-
-def static getNextVersion(String puzzlesVersion) {
-    def puzzlesVersionMatcher = Pattern.compile("(\\d+\\.\\d+)").matcher(puzzlesVersion)
-    puzzlesVersionMatcher.find()
-    def currentVersion = puzzlesVersionMatcher.group(1)
-    return currentVersion.substring(0, currentVersion.indexOf(".") + 1).concat(String.valueOf(Integer.parseInt(currentVersion.substring(currentVersion.indexOf(".") + 1, currentVersion.size())) + 1))
 }

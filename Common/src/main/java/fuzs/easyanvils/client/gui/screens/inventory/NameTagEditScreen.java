@@ -6,6 +6,7 @@ import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.client.gui.components.OpenEditBox;
 import fuzs.easyanvils.config.ServerConfig;
 import fuzs.easyanvils.network.client.C2SNameTagUpdateMessage;
+import fuzs.easyanvils.util.ComponentDecomposer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -31,21 +32,20 @@ public class NameTagEditScreen extends Screen {
     private String itemName;
     private EditBox name;
 
-    public NameTagEditScreen(InteractionHand hand, String title) {
+    public NameTagEditScreen(InteractionHand hand, Component title) {
         super(Component.translatable("easyanvils.name_tag.edit", Items.NAME_TAG.getDescription()));
         this.hand = hand;
-        this.itemName = title;
+        this.itemName = ComponentDecomposer.toFormattedString(title);
     }
 
     @Override
     protected void init() {
-        this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
         this.leftPos = (this.width - this.imageWidth) / 2;
         this.topPos = this.height / 4;
-        this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 4 + 120, 200, 20, CommonComponents.GUI_DONE, (button) -> {
+        this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> {
             EasyAnvils.NETWORK.sendToServer(new C2SNameTagUpdateMessage(this.hand, this.itemName));
             this.onClose();
-        }));
+        }).bounds(this.width / 2 - 100, this.height / 4 + 120, 200, 20).build());
         if (EasyAnvils.CONFIG.get(ServerConfig.class).renamingSupportsFormatting) {
             this.name = new OpenEditBox(this.font, this.leftPos + 62, this.topPos + 26, 103, 12, Component.translatable("container.repair"));
         } else {
@@ -60,11 +60,6 @@ public class NameTagEditScreen extends Screen {
         this.name.setValue(this.itemName);
         this.addWidget(this.name);
         this.setInitialFocus(this.name);
-    }
-
-    @Override
-    public void removed() {
-        this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
     }
 
     @Override

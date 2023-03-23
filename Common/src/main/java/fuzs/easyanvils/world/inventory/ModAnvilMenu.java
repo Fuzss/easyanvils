@@ -2,7 +2,7 @@ package fuzs.easyanvils.world.inventory;
 
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.config.ServerConfig;
-import fuzs.easyanvils.core.ModServices;
+import fuzs.easyanvils.core.CommonAbstractions;
 import fuzs.easyanvils.init.ModRegistry;
 import fuzs.easyanvils.mixin.accessor.AnvilMenuAccessor;
 import fuzs.easyanvils.mixin.accessor.ItemCombinerMenuAccessor;
@@ -227,7 +227,7 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
                 output.setHoverName(ComponentDecomposer.toFormattedComponent(itemName));
             }
 
-            if (isBook && !ModServices.ABSTRACTIONS.isBookEnchantable(output, right)) {
+            if (isBook && !CommonAbstractions.INSTANCE.isBookEnchantable(output, right)) {
                 output = ItemStack.EMPTY;
             }
 
@@ -310,15 +310,19 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
         ((AnvilMenuAccessor) this).easyanvils$setItemName(newName);
         if (this.getSlot(2).hasItem()) {
             ItemStack itemStack = this.getSlot(2).getItem();
-            Component component = ComponentDecomposer.toFormattedComponent(newName);
-            if (component.getString().isEmpty()) {
-                itemStack.resetHoverName();
-            } else {
-                itemStack.setHoverName(component);
-            }
+            setFormattedItemName(newName, itemStack);
         }
 
         this.createResult();
+    }
+
+    public static void setFormattedItemName(String newName, ItemStack itemStack) {
+        Component component = ComponentDecomposer.toFormattedComponent(newName);
+        if (component.getString().isEmpty()) {
+            itemStack.resetHoverName();
+        } else {
+            itemStack.setHoverName(component);
+        }
     }
 
     @Override

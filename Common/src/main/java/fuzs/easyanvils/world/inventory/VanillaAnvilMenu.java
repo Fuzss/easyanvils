@@ -1,6 +1,6 @@
 package fuzs.easyanvils.world.inventory;
 
-import fuzs.easyanvils.core.ModServices;
+import fuzs.easyanvils.core.CommonAbstractions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.EnchantedBookItem;
@@ -154,7 +154,7 @@ public class VanillaAnvilMenu extends BuiltInAnvilMenu {
                 itemStack2.setHoverName(Component.literal(this.getItemName()));
             }
 
-            if (bl && !ModServices.ABSTRACTIONS.isBookEnchantable(itemStack2, itemStack3)) {
+            if (bl && !CommonAbstractions.INSTANCE.isBookEnchantable(itemStack2, itemStack3)) {
                 itemStack2 = ItemStack.EMPTY;
             }
 

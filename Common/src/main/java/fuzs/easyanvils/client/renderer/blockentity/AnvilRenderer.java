@@ -1,7 +1,7 @@
 package fuzs.easyanvils.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.config.ClientConfig;
 import net.minecraft.client.Minecraft;
@@ -36,23 +36,23 @@ public class AnvilRenderer implements BlockEntityRenderer<BlockEntity> {
         if (stack.isEmpty()) return;
         poseStack.pushPose();
         poseStack.translate(0.0,1.0375, 0.0);
-        poseStack.mulPose(Vector3f.XN.rotationDegrees(90.0F));
+        poseStack.mulPose(Axis.XN.rotationDegrees(90.0F));
         boolean mirrored = (direction.getAxisDirection().getStep() == 1 ? 1 : 0) != index % 2;
         switch (direction.getAxis()) {
             case X -> {
                 if (mirrored) {
                     poseStack.translate(0.25, -0.5, 0.0);
                 } else {
-                    poseStack.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(180.0F));
                     poseStack.translate(-0.75, 0.5, 0.0);
                 }
             }
             case Z -> {
                 if (mirrored) {
-                    poseStack.mulPose(Vector3f.ZN.rotationDegrees(90.0F));
+                    poseStack.mulPose(Axis.ZN.rotationDegrees(90.0F));
                     poseStack.translate(0.25, 0.5, 0.0);
                 } else {
-                    poseStack.mulPose(Vector3f.ZP.rotationDegrees(90.0F));
+                    poseStack.mulPose(Axis.ZP.rotationDegrees(90.0F));
                     poseStack.translate(-0.75, -0.5, 0.0);
                 }
             }

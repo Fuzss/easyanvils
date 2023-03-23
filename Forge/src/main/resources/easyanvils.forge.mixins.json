@@ -6,7 +6,6 @@
   "refmap": "easyanvils.refmap.json",
   "plugin": "fuzs.easyanvils.mixin.ModMixinConfigPlugin",
   "mixins": [
-    "integration.apotheosis.ApothAnvilBlockMixin"
   ],
   "client": [
   ],
