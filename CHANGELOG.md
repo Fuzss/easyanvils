@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.11-1.19.3] - 2023-04-20
+### Fixed
+- The anvil menu no longer looses items after it has remained open when the anvil has just been damaged
+
 ## [v4.0.10-1.19.2] - 2023-03-15
 ### Changed
 - Renaming / repairing no longer accounts for the prior work penalty of an item

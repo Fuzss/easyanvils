@@ -8,6 +8,7 @@ import fuzs.easyanvils.mixin.accessor.AnvilMenuAccessor;
 import fuzs.easyanvils.mixin.accessor.ItemCombinerMenuAccessor;
 import fuzs.easyanvils.mixin.accessor.SlotAccessor;
 import fuzs.easyanvils.util.ComponentDecomposer;
+import fuzs.easyanvils.world.level.block.entity.AnvilBlockEntity;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -36,15 +37,29 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
 
     public ModAnvilMenu(int id, Inventory inventory, Container inputSlots, ContainerLevelAccess containerLevelAccess) {
         super(id, inventory, containerLevelAccess);
+        this.updateInputSlots(inputSlots);
+        this.addSlotListener(this);
+        this.builtInAnvilState = new BuiltInAnvilMenu(inventory);
+        this.vanillaAnvilState = new VanillaAnvilMenu(inventory);
+    }
+
+    private void updateInputSlots(Container inputSlots) {
         ((ItemCombinerMenuAccessor) this).setInputSlots(inputSlots);
         // we could also replace slots directly in the slots list as we have direct access to it,
         // but the Ledger mod hooks into AbstractContainerMenu::addSlot which breaks that mod as we wouldn't be using AbstractContainerMenu::addSlot
         // (they store the menu as a @NotNull value, leads to an NPE)
         ((SlotAccessor) this.slots.get(0)).setContainer(inputSlots);
         ((SlotAccessor) this.slots.get(1)).setContainer(inputSlots);
-        this.addSlotListener(this);
-        this.builtInAnvilState = new BuiltInAnvilMenu(inventory);
-        this.vanillaAnvilState = new VanillaAnvilMenu(inventory);
+    }
+
+    @Override
+    protected void onTake(Player player, ItemStack stack) {
+        super.onTake(player, stack);
+        this.access.execute((level, pos) -> {
+            if (level.getBlockEntity(pos) instanceof AnvilBlockEntity blockEntity) {
+                this.updateInputSlots(blockEntity);
+            }
+        });
     }
 
     @Override
