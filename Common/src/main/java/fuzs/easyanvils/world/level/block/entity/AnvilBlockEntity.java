@@ -60,7 +60,7 @@ public class AnvilBlockEntity extends BaseContainerBlockEntity implements Worldl
     }
 
     @Override
-    public NonNullList<ItemStack> items() {
+    public NonNullList<ItemStack> getItems() {
         return this.inventory;
     }
 

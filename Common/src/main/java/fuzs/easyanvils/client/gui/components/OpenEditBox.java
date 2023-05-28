@@ -4,18 +4,19 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.easyanvils.util.ComponentDecomposer;
 import fuzs.easyanvils.util.FormattedStringDecomposer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -485,7 +486,7 @@ public class OpenEditBox extends EditBox {
         } else {
             boolean bl = mouseX >= (double) this.getX() && mouseX < (double) (this.getX() + this.width) && mouseY >= (double) this.getY() && mouseY < (double) (this.getY() + this.height);
             if (this.canLoseFocus) {
-                this.setFocus(bl);
+                this.setFocused(bl);
             }
 
             if (this.isFocused() && bl) {
@@ -551,16 +552,8 @@ public class OpenEditBox extends EditBox {
         }
     }
 
-    /**
-     * Sets focus to this gui element
-     */
     @Override
-    public void setFocus(boolean isFocused) {
-        this.setFocused(isFocused);
-    }
-
-    @Override
-    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         if (this.isVisible()) {
             if (this.isBordered()) {
                 int i = this.isFocused() ? -1 : -6250336;
@@ -613,7 +606,7 @@ public class OpenEditBox extends EditBox {
 
             if (k != j) {
                 int p = l + FormattedStringDecomposer.stringWidth(this.font, this.value.substring(0, this.highlightPos), this.displayPos);
-                this.renderHighlight(o, m - 1, p - 1, m + 1 + 9);
+                this.renderHighlight(poseStack, o, m - 1, p - 1, m + 1 + 9);
             }
         }
     }
@@ -621,7 +614,7 @@ public class OpenEditBox extends EditBox {
     /**
      * Draws the blue selection box.
      */
-    private void renderHighlight(int startX, int startY, int endX, int endY) {
+    private void renderHighlight(PoseStack poseStack, int startX, int startY, int endX, int endY) {
         if (startX < endX) {
             int i = startX;
             startX = endX;
@@ -642,22 +635,10 @@ public class OpenEditBox extends EditBox {
             startX = this.getX() + this.width;
         }
 
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferBuilder = tesselator.getBuilder();
-        RenderSystem.setShader(GameRenderer::getPositionShader);
-        RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
-        RenderSystem.disableTexture();
         RenderSystem.enableColorLogicOp();
         RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-        bufferBuilder.vertex(startX, endY, 0.0).endVertex();
-        bufferBuilder.vertex(endX, endY, 0.0).endVertex();
-        bufferBuilder.vertex(endX, startY, 0.0).endVertex();
-        bufferBuilder.vertex(startX, startY, 0.0).endVertex();
-        tesselator.end();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        fill(poseStack, startX, startY, endX, endY, -16776961);
         RenderSystem.disableColorLogicOp();
-        RenderSystem.enableTexture();
     }
 
     /**
@@ -719,9 +700,9 @@ public class OpenEditBox extends EditBox {
         this.textColorUneditable = color;
     }
 
-    @Override
-    public boolean changeFocus(boolean focus) {
-        return this.visible && this.isEditable ? super.changeFocus(focus) : false;
+    @Nullable
+    public ComponentPath nextFocusPath(FocusNavigationEvent focusNavigationEvent) {
+        return this.visible && this.isEditable ? super.nextFocusPath(focusNavigationEvent) : null;
     }
 
     @Override
@@ -730,11 +711,14 @@ public class OpenEditBox extends EditBox {
     }
 
     @Override
-    protected void onFocusedChanged(boolean focused) {
-        if (focused) {
-            this.frame = 0;
-        }
+    public void setFocused(boolean bl) {
+        if (this.canLoseFocus || bl) {
+            super.setFocused(bl);
+            if (bl) {
+                this.frame = 0;
+            }
 
+        }
     }
 
     private boolean isEditable() {

@@ -91,14 +91,12 @@ public class NameTagEditScreen extends Screen {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, EDIT_NAME_TAG_LOCATION);
-        this.blit(poseStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
-        this.itemRenderer.blitOffset = 100.0F;
+        blit(poseStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
         PoseStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushPose();
         modelViewStack.scale(2.0F, 2.0F, 2.0F);
-        this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.NAME_TAG), (this.leftPos + 17) / 2, (this.topPos + 8) / 2);
+        this.itemRenderer.renderAndDecorateItem(poseStack, new ItemStack(Items.NAME_TAG), (this.leftPos + 17) / 2, (this.topPos + 8) / 2);
         modelViewStack.popPose();
-        this.itemRenderer.blitOffset = 0.0F;
         RenderSystem.applyModelViewMatrix();
     }
 }

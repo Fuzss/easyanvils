@@ -6,13 +6,14 @@ import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.config.ClientConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AnvilBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -28,11 +29,11 @@ public class AnvilRenderer implements BlockEntityRenderer<BlockEntity> {
         if (!EasyAnvils.CONFIG.get(ClientConfig.class).renderAnvilContents) return;
         Direction direction = blockEntity.getBlockState().getValue(AnvilBlock.FACING);
         int posData = (int) blockEntity.getBlockPos().asLong();
-        this.renderFlatItem(0, ((Container) blockEntity).getItem(0), direction, poseStack, bufferSource, packedLight, packedOverlay, posData);
-        this.renderFlatItem(1, ((Container) blockEntity).getItem(1), direction, poseStack, bufferSource, packedLight, packedOverlay, posData);
+        this.renderFlatItem(0, ((Container) blockEntity).getItem(0), direction, poseStack, bufferSource, packedLight, packedOverlay, posData, blockEntity.getLevel());
+        this.renderFlatItem(1, ((Container) blockEntity).getItem(1), direction, poseStack, bufferSource, packedLight, packedOverlay, posData, blockEntity.getLevel());
     }
 
-    private void renderFlatItem(int index, ItemStack stack, Direction direction, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, int posData) {
+    private void renderFlatItem(int index, ItemStack stack, Direction direction, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, int posData, Level level) {
         if (stack.isEmpty()) return;
         poseStack.pushPose();
         poseStack.translate(0.0,1.0375, 0.0);
@@ -58,7 +59,7 @@ public class AnvilRenderer implements BlockEntityRenderer<BlockEntity> {
             }
         }
         poseStack.scale(0.375F, 0.375F, 0.375F);
-        this.itemRenderer.renderStatic(stack, ItemTransforms.TransformType.FIXED, packedLight, packedOverlay, poseStack, bufferSource, posData + index);
+        this.itemRenderer.renderStatic(stack, ItemDisplayContext.FIXED, packedLight, packedOverlay, poseStack, bufferSource, level, posData + index);
         poseStack.popPose();
     }
 }
