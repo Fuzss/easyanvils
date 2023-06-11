@@ -2,6 +2,10 @@ package fuzs.easyanvils.client.gui.components;
 
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * This is not currently used, the idea is to create an undo history feature for the edit box
+ * (not that it's too useful for the anvil screen, but more as a general experiment).
+ */
 public class TypeActionManager {
     private static final int MAX_STATES = 100;
     private final TypeState[] states = new TypeState[MAX_STATES];

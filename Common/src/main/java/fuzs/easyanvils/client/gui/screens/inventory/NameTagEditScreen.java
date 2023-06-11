@@ -1,17 +1,16 @@
 package fuzs.easyanvils.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.client.gui.components.OpenEditBox;
 import fuzs.easyanvils.config.ServerConfig;
 import fuzs.easyanvils.network.client.C2SNameTagUpdateMessage;
 import fuzs.easyanvils.util.ComponentDecomposer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -67,36 +66,28 @@ public class NameTagEditScreen extends Screen {
         this.name.tick();
     }
 
-    protected void renderLabels(PoseStack poseStack, int mouseX, int mouseY) {
-        this.font.draw(poseStack, this.title, this.leftPos + this.titleLabelX, this.topPos + this.titleLabelY, 4210752);
-    }
-
     @Override
-    public void resize(Minecraft pMinecraft, int pWidth, int pHeight) {
+    public void resize(Minecraft minecraft, int width, int height) {
         String s = this.name.getValue();
-        this.init(pMinecraft, pWidth, pHeight);
+        this.init(minecraft, width, height);
         this.name.setValue(s);
     }
 
     @Override
-    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(poseStack);
-        this.renderBg(poseStack, partialTick, mouseX, mouseY);
-        super.render(poseStack, mouseX, mouseY, partialTick);
-        this.renderLabels(poseStack, mouseX, mouseY);
-        this.name.render(poseStack, mouseX, mouseY, partialTick);
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(guiGraphics);
+        this.renderBg(guiGraphics, partialTick, mouseX, mouseY);
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        guiGraphics.drawString(this.font, this.title, this.leftPos + this.titleLabelX, this.topPos + this.titleLabelY, 4210752, false);
+        this.name.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
-    protected void renderBg(PoseStack poseStack, float partialTick, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, EDIT_NAME_TAG_LOCATION);
-        blit(poseStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
-        PoseStack modelViewStack = RenderSystem.getModelViewStack();
-        modelViewStack.pushPose();
-        modelViewStack.scale(2.0F, 2.0F, 2.0F);
-        this.itemRenderer.renderAndDecorateItem(poseStack, new ItemStack(Items.NAME_TAG), (this.leftPos + 17) / 2, (this.topPos + 8) / 2);
-        modelViewStack.popPose();
-        RenderSystem.applyModelViewMatrix();
+        guiGraphics.blit(EDIT_NAME_TAG_LOCATION, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().scale(2.0F, 2.0F, 2.0F);
+        guiGraphics.renderItem(new ItemStack(Items.NAME_TAG), (this.leftPos + 17) / 2, (this.topPos + 8) / 2);
+        guiGraphics.pose().popPose();
     }
 }

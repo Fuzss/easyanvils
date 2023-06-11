@@ -27,8 +27,8 @@ public interface AnvilMenuState {
         if (o1.getLevelCost() != o2.getLevelCost()) return false;
         if (o1.getRepairItemCountCost() != o2.getRepairItemCountCost()) return false;
         if (!StringUtils.equals(o1.getItemName(), o2.getItemName())) return false;
-        if (!ItemStack.tagMatches(o1.getResult(), o2.getResult())) return false;
-        if (!ItemStack.tagMatches(o1.getLeftInput(), o2.getLeftInput())) return false;
-        return ItemStack.tagMatches(o1.getRightInput(), o2.getRightInput());
+        if (!ItemStack.isSameItemSameTags(o1.getResult(), o2.getResult())) return false;
+        if (!ItemStack.isSameItemSameTags(o1.getLeftInput(), o2.getLeftInput())) return false;
+        return ItemStack.isSameItemSameTags(o1.getRightInput(), o2.getRightInput());
     }
 }

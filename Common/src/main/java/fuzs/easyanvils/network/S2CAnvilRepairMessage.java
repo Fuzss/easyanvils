@@ -40,7 +40,7 @@ public class S2CAnvilRepairMessage implements MessageV2<S2CAnvilRepairMessage> {
             @Override
             public void handle(S2CAnvilRepairMessage message, Player player, Object gameInstance) {
                 // play repair sound
-                player.level.levelEvent(LevelEvent.SOUND_ANVIL_USED, message.pos, 0);
+                player.level().levelEvent(LevelEvent.SOUND_ANVIL_USED, message.pos, 0);
                 // show block breaking particles for anvil without playing breaking sound
                 ((Minecraft) gameInstance).particleEngine.destroy(message.pos, Block.stateById(message.stateId));
             }

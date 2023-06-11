@@ -1,7 +1,6 @@
 package fuzs.easyanvils.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.easyanvils.EasyAnvils;
 import fuzs.easyanvils.client.gui.components.OpenEditBox;
 import fuzs.easyanvils.client.gui.components.TypeActionManager;
@@ -10,6 +9,7 @@ import fuzs.easyanvils.mixin.client.accessor.AnvilScreenAccessor;
 import fuzs.easyanvils.network.client.C2SRenameItemMessage;
 import fuzs.easyanvils.util.ComponentDecomposer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 import net.minecraft.network.chat.Component;
@@ -67,8 +67,9 @@ public class ModAnvilScreen extends AnvilScreen {
             input = "";
         }
 
-        this.menu.setItemName(input);
-        EasyAnvils.NETWORK.sendToServer(new C2SRenameItemMessage(input));
+        if (this.menu.setItemName(input)) {
+            EasyAnvils.NETWORK.sendToServer(new C2SRenameItemMessage(input));
+        }
     }
 
     @Override
@@ -82,11 +83,11 @@ public class ModAnvilScreen extends AnvilScreen {
 
 
     @Override
-    protected void renderLabels(PoseStack poseStack, int mouseX, int mouseY) {
+    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         RenderSystem.disableBlend();
         // copied from AbstractContainerScreen super
-        this.font.draw(poseStack, this.title, (float) this.titleLabelX, (float) this.titleLabelY, 4210752);
-        this.font.draw(poseStack, this.playerInventoryTitle, (float) this.inventoryLabelX, (float) this.inventoryLabelY, 4210752);
+        guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+        guiGraphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
         int i = this.menu.getCost();
         if (i != 0) {
             int j = 8453920;
@@ -106,8 +107,8 @@ public class ModAnvilScreen extends AnvilScreen {
             }
             if (component != null) {
                 int k = this.imageWidth - 8 - this.font.width(component) - 2;
-                fill(poseStack, k - 2, 67, this.imageWidth - 8, 79, 1325400064);
-                this.font.drawShadow(poseStack, component, (float) k, 69.0F, j);
+                guiGraphics.fill(k - 2, 67, this.imageWidth - 8, 79, 1325400064);
+                guiGraphics.drawString(this.font, component, k, 69, j);
             }
         }
     }

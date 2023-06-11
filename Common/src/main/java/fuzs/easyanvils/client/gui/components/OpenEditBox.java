@@ -1,22 +1,20 @@
 package fuzs.easyanvils.client.gui.components;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.easyanvils.util.ComponentDecomposer;
 import fuzs.easyanvils.util.FormattedStringDecomposer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -553,12 +551,12 @@ public class OpenEditBox extends EditBox {
     }
 
     @Override
-    public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         if (this.isVisible()) {
             if (this.isBordered()) {
                 int i = this.isFocused() ? -1 : -6250336;
-                fill(poseStack, this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, i);
-                fill(poseStack, this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, -16777216);
+                guiGraphics.fill(this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, i);
+                guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, -16777216);
             }
 
             int i = this.isEditable ? this.textColor : this.textColorUneditable;
@@ -576,7 +574,7 @@ public class OpenEditBox extends EditBox {
 
             if (!string.isEmpty()) {
                 String string2 = bl ? string.substring(0, j) : string;
-                n = this.font.drawShadow(poseStack, this.formatter.apply(string2, this.displayPos), (float) l, (float) m, i);
+                n = guiGraphics.drawString(this.font, this.formatter.apply(string2, this.displayPos), l, m, i);
             }
 
             boolean bl3 = this.cursorPos < this.value.length() || ComponentDecomposer.getStringLength(this.value) >= this.getMaxLength();
@@ -589,24 +587,24 @@ public class OpenEditBox extends EditBox {
             }
 
             if (!string.isEmpty() && bl && j < string.length()) {
-                this.font.drawShadow(poseStack, this.formatter.apply(string.substring(j), this.cursorPos), (float) n, (float) m, i);
+                guiGraphics.drawString(this.font, this.formatter.apply(string.substring(j), this.cursorPos), n, m, i);
             }
 
             if (!bl3 && this.suggestion != null) {
-                this.font.drawShadow(poseStack, this.suggestion, (float) (o - 1), (float) m, -8355712);
+                guiGraphics.drawString(this.font, this.suggestion, (o - 1), m, -8355712);
             }
 
             if (bl2 && k == j) {
                 if (!string.isEmpty()) {
-                    GuiComponent.fill(poseStack, o, m - 1, o + 1, m + 1 + 9, -3092272);
+                    guiGraphics.fill(o, m - 1, o + 1, m + 1 + 9, -3092272);
                 } else {
-                    this.font.drawShadow(poseStack, "_", (float) o, (float) m, i);
+                    guiGraphics.drawString(this.font, "_", o, m, i);
                 }
             }
 
             if (k != j) {
                 int p = l + FormattedStringDecomposer.stringWidth(this.font, this.value.substring(0, this.highlightPos), this.displayPos);
-                this.renderHighlight(poseStack, o, m - 1, p - 1, m + 1 + 9);
+                this.renderHighlight(guiGraphics, o, m - 1, p - 1, m + 1 + 9);
             }
         }
     }
@@ -614,7 +612,7 @@ public class OpenEditBox extends EditBox {
     /**
      * Draws the blue selection box.
      */
-    private void renderHighlight(PoseStack poseStack, int startX, int startY, int endX, int endY) {
+    private void renderHighlight(GuiGraphics guiGraphics, int startX, int startY, int endX, int endY) {
         if (startX < endX) {
             int i = startX;
             startX = endX;
@@ -635,10 +633,7 @@ public class OpenEditBox extends EditBox {
             startX = this.getX() + this.width;
         }
 
-        RenderSystem.enableColorLogicOp();
-        RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-        fill(poseStack, startX, startY, endX, endY, -16776961);
-        RenderSystem.disableColorLogicOp();
+        guiGraphics.fill(RenderType.guiTextHighlight(), startX, startY, endX, endY, -16776961);
     }
 
     /**

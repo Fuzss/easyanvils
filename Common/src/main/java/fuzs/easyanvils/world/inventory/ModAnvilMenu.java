@@ -8,6 +8,7 @@ import fuzs.easyanvils.mixin.accessor.AnvilMenuAccessor;
 import fuzs.easyanvils.mixin.accessor.ItemCombinerMenuAccessor;
 import fuzs.easyanvils.mixin.accessor.SlotAccessor;
 import fuzs.easyanvils.util.ComponentDecomposer;
+import fuzs.easyanvils.util.FormattedStringDecomposer;
 import fuzs.easyanvils.world.level.block.entity.AnvilBlockEntity;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,6 +23,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
     private final AnvilMenuState builtInAnvilState;
@@ -321,14 +323,20 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
     }
 
     @Override
-    public void setItemName(String newName) {
-        ((AnvilMenuAccessor) this).easyanvils$setItemName(newName);
-        if (this.getSlot(2).hasItem()) {
-            ItemStack itemStack = this.getSlot(2).getItem();
-            setFormattedItemName(newName, itemStack);
+    public boolean setItemName(String newName) {
+        newName = FormattedStringDecomposer.filterText(newName);
+        if (ComponentDecomposer.getStringLength(newName) <= 50 && !Objects.equals(newName, ((AnvilMenuAccessor) this).easyanvils$getItemName())) {
+            ((AnvilMenuAccessor) this).easyanvils$setItemName(newName);
+            if (this.getSlot(2).hasItem()) {
+                ItemStack itemStack = this.getSlot(2).getItem();
+                setFormattedItemName(newName, itemStack);
+            }
+
+            this.createResult();
+            return true;
         }
 
-        this.createResult();
+        return false;
     }
 
     public static void setFormattedItemName(String newName, ItemStack itemStack) {
