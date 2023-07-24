@@ -33,16 +33,16 @@ public class ModAnvilMenu extends AnvilMenu implements ContainerListener {
         // this constructor may not override inputSlots as vanilla adds a listener to it which is necessary client-side for the renaming edit box
         // so let this go to super instead of the main constructor to skip any inputSlots shenanigans
         super(id, inventory);
-        this.builtInAnvilState = new BuiltInAnvilMenu(inventory);
-        this.vanillaAnvilState = new VanillaAnvilMenu(inventory);
+        this.builtInAnvilState = new BuiltInAnvilMenu(inventory, ContainerLevelAccess.NULL);
+        this.vanillaAnvilState = new VanillaAnvilMenu(inventory, ContainerLevelAccess.NULL);
     }
 
     public ModAnvilMenu(int id, Inventory inventory, Container inputSlots, ContainerLevelAccess containerLevelAccess) {
         super(id, inventory, containerLevelAccess);
         this.updateInputSlots(inputSlots);
         this.addSlotListener(this);
-        this.builtInAnvilState = new BuiltInAnvilMenu(inventory);
-        this.vanillaAnvilState = new VanillaAnvilMenu(inventory);
+        this.builtInAnvilState = new BuiltInAnvilMenu(inventory, containerLevelAccess);
+        this.vanillaAnvilState = new VanillaAnvilMenu(inventory, containerLevelAccess);
     }
 
     private void updateInputSlots(Container inputSlots) {

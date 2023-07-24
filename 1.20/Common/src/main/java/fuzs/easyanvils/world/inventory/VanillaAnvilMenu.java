@@ -3,6 +3,7 @@ package fuzs.easyanvils.world.inventory;
 import fuzs.easyanvils.core.CommonAbstractions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -14,8 +15,8 @@ import java.util.Map;
 
 public class VanillaAnvilMenu extends BuiltInAnvilMenu {
 
-    public VanillaAnvilMenu(Inventory inventory) {
-        super(inventory);
+    public VanillaAnvilMenu(Inventory inventory, ContainerLevelAccess containerLevelAccess) {
+        super(inventory, containerLevelAccess);
     }
 
     @Override

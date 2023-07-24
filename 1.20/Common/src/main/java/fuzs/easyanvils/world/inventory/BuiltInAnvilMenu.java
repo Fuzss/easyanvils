@@ -3,12 +3,13 @@ package fuzs.easyanvils.world.inventory;
 import fuzs.easyanvils.mixin.accessor.AnvilMenuAccessor;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 
 public class BuiltInAnvilMenu extends AnvilMenu implements AnvilMenuState {
 
-    public BuiltInAnvilMenu(Inventory inventory) {
-        super(-1, inventory);
+    public BuiltInAnvilMenu(Inventory inventory, ContainerLevelAccess containerLevelAccess) {
+        super(-1, inventory, containerLevelAccess);
     }
 
     @Override
