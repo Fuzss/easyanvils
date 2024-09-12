@@ -1,7 +1,6 @@
 package fuzs.easyanvils.init;
 
 import fuzs.easyanvils.EasyAnvils;
-import fuzs.easyanvils.handler.BlockConversionHandler;
 import fuzs.easyanvils.world.inventory.ModAnvilMenu;
 import fuzs.easyanvils.world.level.block.entity.AnvilBlockEntity;
 import fuzs.puzzleslib.api.core.v1.ModLoader;
@@ -14,14 +13,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class ModRegistry {
-    static final RegistryManager REGISTRY = RegistryManager.from(EasyAnvils.MOD_ID);
-    public static final Holder.Reference<BlockEntityType<AnvilBlockEntity>> ANVIL_BLOCK_ENTITY_TYPE = REGISTRY.whenNotOn(
-            ModLoader.FORGE).registerBlockEntityType("anvil", () -> {
-        BlockEntityType.Builder<AnvilBlockEntity> builder = BlockEntityType.Builder.of(AnvilBlockEntity::new);
-        builder.validBlocks = BlockConversionHandler.BLOCK_CONVERSIONS.values();
-        return builder;
-    });
-    public static final Holder.Reference<MenuType<ModAnvilMenu>> ANVIL_MENU_TYPE = REGISTRY.registerMenuType("repair",
+    static final RegistryManager REGISTRIES = RegistryManager.from(EasyAnvils.MOD_ID);
+    public static final Holder.Reference<BlockEntityType<AnvilBlockEntity>> ANVIL_BLOCK_ENTITY_TYPE = REGISTRIES.whenNotOn(
+            ModLoader.FORGE).registerBlockEntityType("anvil", () -> BlockEntityType.Builder.of(AnvilBlockEntity::new));
+    public static final Holder.Reference<MenuType<ModAnvilMenu>> ANVIL_MENU_TYPE = REGISTRIES.registerMenuType("repair",
             () -> ModAnvilMenu::new
     );
 
