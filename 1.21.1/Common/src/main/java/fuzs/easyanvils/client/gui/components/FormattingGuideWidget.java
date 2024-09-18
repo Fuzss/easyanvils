@@ -1,14 +1,15 @@
 package fuzs.easyanvils.client.gui.components;
 
-import com.google.common.collect.Lists;
 import fuzs.easyanvils.client.gui.screens.inventory.tooltip.LargeTooltipPositioner;
 import fuzs.easyanvils.util.FormattedStringDecomposer;
-import fuzs.puzzleslib.api.client.gui.v2.components.ScreenTooltipFactory;
+import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractStringWidget;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -23,19 +24,29 @@ public class FormattingGuideWidget extends AbstractStringWidget {
     private static final Component QUESTION_MARK_COMPONENT = Component.literal("?");
 
     public FormattingGuideWidget(int x, int y, Font font) {
-        super(x - font.width(QUESTION_MARK_COMPONENT) * 2, y, font.width(QUESTION_MARK_COMPONENT) * 2, font.lineHeight, QUESTION_MARK_COMPONENT, font);
+        super(x - font.width(QUESTION_MARK_COMPONENT) * 2, y,
+                font.width(QUESTION_MARK_COMPONENT) * 2, font.lineHeight, QUESTION_MARK_COMPONENT, font
+        );
         this.active = true;
-        List<MutableComponent> formattingCodes = Lists.newArrayList();
+        TooltipBuilder tooltipBuilder = TooltipBuilder.create()
+                .setTooltipPositionerFactory((ClientTooltipPositioner clientTooltipPositioner, AbstractWidget abstractWidget) -> {
+                    if (clientTooltipPositioner instanceof BelowOrAboveWidgetTooltipPositioner) {
+                        return new LargeTooltipPositioner(abstractWidget.getRectangle());
+                    } else {
+                        return new LargeTooltipPositioner(null);
+                    }
+                }).setTooltipLineProcessor((List<? extends FormattedText> tooltipLines) -> {
+                    return tooltipLines.stream().map(FormattingGuideWidget::getVisualOrder).toList();
+                });
         for (ChatFormatting chatFormatting : ChatFormatting.values()) {
             MutableComponent component = Component.translatable("chat.formatting." + chatFormatting.getName());
-            // black font cannot be read on the tooltip
-            if (chatFormatting != ChatFormatting.BLACK) component.withStyle(chatFormatting);
-            formattingCodes.add(Component.literal("§" + chatFormatting.getChar()).append(" - ").append(component));
+            // black font and obfuscated text cannot be read on the tooltip
+            if (chatFormatting != ChatFormatting.BLACK && chatFormatting != ChatFormatting.OBFUSCATED) {
+                component.withStyle(chatFormatting);
+            }
+            tooltipBuilder.addLines(Component.literal("§" + chatFormatting.getChar()).append(" - ").append(component));
         }
-        List<FormattedCharSequence> lines = formattingCodes.stream().map(FormattingGuideWidget::getVisualOrder).toList();
-        ScreenTooltipFactory.setWidgetTooltipFromCharSequence(this, lines, (ScreenRectangle screenRectangle, Boolean forKeyboard) -> {
-            return new LargeTooltipPositioner(forKeyboard ? screenRectangle : null);
-        });
+        tooltipBuilder.build(this);
     }
 
     @Override
@@ -57,7 +68,8 @@ public class FormattingGuideWidget extends AbstractStringWidget {
                 // this is the same iterate method we use for styling anvil & name tag edit box contents which will keep formatting codes intact
                 // it will apply them to ensuing characters though, which is not an issue here
                 // as all components containing formatting codes consist of two characters representing the formatting code
-                return FormattedStringDecomposer.iterateFormatted(string, style, formattedCharSink) ? Optional.empty() : FormattedText.STOP_ITERATION;
+                return FormattedStringDecomposer.iterateFormatted(string, style, formattedCharSink) ? Optional.empty() :
+                        FormattedText.STOP_ITERATION;
             }, Style.EMPTY).isPresent();
         };
     }
